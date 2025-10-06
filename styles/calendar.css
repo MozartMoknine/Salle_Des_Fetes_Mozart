@@ -1,0 +1,189 @@
+/* Calendar Visual Styles */
+
+.calendar-day {
+    @apply min-h-24 border border-gray-200 rounded-lg p-2 transition-all duration-200 hover:shadow-md;
+    position: relative;
+}
+
+.calendar-day.empty-day {
+    @apply bg-gray-50;
+}
+
+.calendar-day.past-day {
+    @apply bg-gray-300 text-gray-600;
+}
+
+.calendar-day.today {
+    @apply bg-blue-100 border-blue-400 border-2;
+}
+
+.calendar-day.available-day {
+    @apply bg-green-100 border-green-400 hover:bg-green-200;
+}
+
+.calendar-day.partial-day {
+    @apply bg-yellow-100 border-yellow-400 hover:bg-yellow-200;
+}
+
+.calendar-day.booked-day {
+    @apply bg-red-100 border-red-400 hover:bg-red-200;
+}
+
+.day-number {
+    @apply text-lg font-bold mb-1;
+}
+
+.day-status {
+    @apply flex items-center text-xs mb-2;
+}
+
+.day-status i {
+    @apply mr-1;
+}
+
+.status-text {
+    @apply font-medium;
+}
+
+.reservation-info {
+    @apply space-y-1;
+}
+
+.reservation-item {
+    @apply text-xs bg-white bg-opacity-70 rounded px-2 py-1;
+}
+
+.client-name {
+    @apply font-semibold text-gray-800;
+}
+
+.time-slot {
+    @apply text-gray-600;
+}
+
+/* Modal Styles */
+.modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
+}
+
+.modal-content {
+    @apply bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-96 overflow-hidden;
+}
+
+.modal-header {
+    @apply flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50;
+}
+
+.modal-header h3 {
+    @apply text-lg font-semibold text-gray-800;
+}
+
+.close-modal {
+    @apply text-gray-400 hover:text-gray-600 text-xl;
+}
+
+.modal-body {
+    @apply p-4 overflow-y-auto max-h-80;
+}
+
+.reservation-detail {
+    @apply border border-gray-200 rounded-lg p-3 mb-3 last:mb-0;
+}
+
+.reservation-header {
+    @apply flex justify-between items-center mb-2;
+}
+
+.time-badge {
+    @apply bg-gold text-black px-2 py-1 rounded text-xs font-semibold;
+}
+
+.reservation-info-detail {
+    @apply space-y-1 text-sm text-gray-600;
+}
+
+.reservation-info-detail div {
+    @apply flex items-center;
+}
+
+.reservation-info-detail i {
+    @apply mr-2 w-4 text-center;
+}
+
+/* Color variations for different statuses */
+.past-day .day-status {
+    @apply text-gray-500;
+}
+
+.today .day-status {
+    @apply text-blue-600;
+}
+
+.available-day .day-status {
+    @apply text-green-600;
+}
+
+.partial-day .day-status {
+    @apply text-yellow-600;
+}
+
+.booked-day .day-status {
+    @apply text-red-600;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .calendar-day {
+        @apply min-h-20 p-1;
+    }
+    
+    .day-number {
+        @apply text-base;
+    }
+    
+    .day-status {
+        @apply text-xs;
+    }
+    
+    .reservation-item {
+        @apply text-xs px-1 py-0.5;
+    }
+    
+    .modal-content {
+        @apply mx-2;
+    }
+}
+
+/* Animation for calendar transitions */
+.calendar-day {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Hover effects */
+.calendar-day:hover {
+    transform: translateY(-2px);
+}
+
+.calendar-day.past-day:hover {
+    transform: none;
+}
+
+/* Legend improvements */
+.legend-item {
+    @apply flex items-center space-x-2;
+}
+
+.legend-color {
+    @apply w-4 h-4 rounded;
+}

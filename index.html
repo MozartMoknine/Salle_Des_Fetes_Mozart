@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salle des Fêtes Mozart</title>
+
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Mozart">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#FFD700">
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/icons/icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="/icons/icon-96x96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="/icons/icon-128x128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/icons/icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="/icons/icon-384x384.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512x512.png">
+
+    <!-- Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: '#FFD700',
+                        darkgold: '#B8860B',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="styles/main.css">
+  <style>
+/* .bg-black {
+    --tw-bg-opacity: 1 !important;;
+    background-color: rgb(37 165 190) !important;
+}
+ */
+    
+  </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-black shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-music text-gold text-2xl"></i>
+                    <h1 class="text-white text-xl font-bold">Salle des Fêtes Mozart</h1>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.html" class="nav-link active">Accueil</a>
+                    <a href="login.html" class="nav-link">Administration</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-white">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-900">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="index.html" class="mobile-nav-link active">Accueil</a>
+                <a href="login.html" class="mobile-nav-link">Administration</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-r from-black to-gray-900 text-white py-20">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h1 class="text-5xl md:text-7xl font-bold mb-4 text-gradient">
+                Salle des Fêtes Mozart
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 text-gray-300">
+                Votre lieu d'exception pour tous vos événements
+            </p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center">
+                <a href="login.html" class="bg-gold text-white px-8 py-3 rounded-lg font-semibold hover:bg-darkgold transition-colors font-color:white">
+                    Réserver Maintenant
+                </a>
+                <a href="#contact" class="border border-gold text-gold px-8 py-3 rounded-lg font-semibold hover:bg-gold hover:text-black transition-colors">
+                    Nous Contacter
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Notre Salle</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="gallery-item">
+                    <img src="https://images.pexels.com/photos/1190298/pexels-photo-1190298.jpeg?auto=compress&cs=tinysrgb&w=400" 
+                         alt="Salle principale" class="w-full h-64 object-cover rounded-lg">
+                    <p class="text-center mt-2 text-gray-600">Salle principale</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.pexels.com/photos/1587927/pexels-photo-1587927.jpeg?auto=compress&cs=tinysrgb&w=400" 
+                         alt="Décoration élégante" class="w-full h-64 object-cover rounded-lg">
+                    <p class="text-center mt-2 text-gray-600">Décoration élégante</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.pexels.com/photos/169198/pexels-photo-169198.jpeg?auto=compress&cs=tinysrgb&w=400" 
+                         alt="Espace événements" class="w-full h-64 object-cover rounded-lg">
+                    <p class="text-center mt-2 text-gray-600">Espace événements</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.pexels.com/photos/1395967/pexels-photo-1395967.jpeg?auto=compress&cs=tinysrgb&w=400" 
+                         alt="Éclairage ambiant" class="w-full h-64 object-cover rounded-lg">
+                    <p class="text-center mt-2 text-gray-600">Éclairage ambiant</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.pexels.com/photos/1024359/pexels-photo-1024359.jpeg?auto=compress&cs=tinysrgb&w=400" 
+                         alt="Configuration mariage" class="w-full h-64 object-cover rounded-lg">
+                    <p class="text-center mt-2 text-gray-600">Configuration mariage</p>
+                </div>
+                <div class="gallery-item">
+                    <img src="https://images.pexels.com/photos/2306281/pexels-photo-2306281.jpeg?auto=compress&cs=tinysrgb&w=400" 
+                         alt="Espace cocktail" class="w-full h-64 object-cover rounded-lg">
+                    <p class="text-center mt-2 text-gray-600">Espace cocktail</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Instagram Reels Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Découvrez Nos Événements</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="instagram-embed">
+                    <iframe src="https://www.instagram.com/p/placeholder1/embed" 
+                            width="100%" height="400" frameborder="0" scrolling="no" 
+                            allowtransparency="true" class="rounded-lg"></iframe>
+                </div>
+                <div class="instagram-embed">
+                    <iframe src="https://www.instagram.com/p/placeholder2/embed" 
+                            width="100%" height="400" frameborder="0" scrolling="no" 
+                            allowtransparency="true" class="rounded-lg"></iframe>
+                </div>
+                <div class="instagram-embed">
+                    <iframe src="https://www.instagram.com/p/placeholder3/embed" 
+                            width="100%" height="400" frameborder="0" scrolling="no" 
+                            allowtransparency="true" class="rounded-lg"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 bg-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="text-3xl font-bold text-center mb-12 text-gray-800">Contactez-Nous</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- Contact Info -->
+                <div class="space-y-8">
+                    <div class="contact-item">
+                        <i class="fas fa-map-marker-alt text-gold text-xl"></i>
+                        <div class="ml-4">
+                            <h3 class="font-semibold text-lg">Localisation</h3>
+                            <p class="text-gray-600">Adresse de la Salle des Fêtes Mozart</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone text-gold text-xl"></i>
+                        <div class="ml-4">
+                            <h3 class="font-semibold text-lg">Téléphone</h3>
+                            <p class="text-gray-600">+216 XX XXX XXX</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fab fa-facebook text-gold text-xl"></i>
+                        <div class="ml-4">
+                            <h3 class="font-semibold text-lg">Facebook</h3>
+                            <a href="#" class="text-blue-600 hover:underline">Salle des Fêtes Mozart</a>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fab fa-instagram text-gold text-xl"></i>
+                        <div class="ml-4">
+                            <h3 class="font-semibold text-lg">Instagram</h3>
+                            <a href="#" class="text-pink-600 hover:underline">@sallemozart</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Google Maps -->
+                <div class="rounded-lg overflow-hidden shadow-lg">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3193.7182!2d10.165!3d36.8065!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzYuODA2NSxUdW5pczEwLjE2NQ!5e0!3m2!1sen!2stn!4v1234567890" 
+                            width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy" 
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white py-8">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <p>&copy; 2024 Salle des Fêtes Mozart. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <!-- Mobile Menu Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
