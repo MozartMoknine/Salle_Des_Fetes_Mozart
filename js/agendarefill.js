@@ -25,6 +25,11 @@ class agendarefill {
     this.setDefaults();
   }
 setDefaults() {
+ const hor=  this.form.querySelector('select[name="horaire"]');
+   if (hor) {
+        hor.value = 'Nuit'; // Set default horaire
+    }
+  
    const ev = document.getElementById('event-type');
 const lt = document.getElementById('light-option');
     if (ev) {
