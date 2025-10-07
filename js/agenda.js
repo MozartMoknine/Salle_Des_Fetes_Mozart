@@ -1789,7 +1789,21 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
     XLSX.writeFile(wb, fileName);
 }
 
-    exportToPDF() {
+   exportToPDF() {
+    const monthNames = {
+        '1': 'Janvier', '2': 'Février', '3': 'Mars', '4': 'Avril',
+        '5': 'Mai', '6': 'Juin', '7': 'Juillet', '8': 'Août',
+        '9': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+    };
+
+    const searchInput = document.getElementById('search-input');
+    const monthFilter = document.getElementById('month-filter');
+    const searchValue = searchInput ? searchInput.value.trim() : '';
+    const monthValue = monthFilter ? monthFilter.value : '';
+
+    const titlePart = monthValue ? monthNames[monthValue] : (searchValue || 'Toutes');
+    const fileName = `Mozart_reservation_${titlePart}.pdf`;
+
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
@@ -1816,13 +1830,13 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
         const finalNotes = manualNotes.join(', ');
 
         return [
-            new Date(res.date_res).toLocaleDateString('fr-FR'),
+            { content: new Date(res.date_res).toLocaleDateString('fr-FR'), styles: { textColor: [128, 0, 0] } }, // marron
             res.nom || '',
             res.prenom || '',
             res.cin || '',
             res.tel1 || '',
             res.horaire || '',
-            finalEventType,
+            { content: finalEventType, styles: { textColor: [0, 0, 255] } }, // blue
             finalOptions,
             `${res.montant_tot || 0} DT`,
             `${res.avance || 0} DT`,
@@ -1831,7 +1845,9 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
         ];
     });
 
-    doc.text("Réservations Mozart", 14, 20);
+    doc.setFontSize(12);
+    doc.text(`Réservations Mozart – ${titlePart}`, 14, 20);
+
     doc.autoTable({
         head: [[
             'Date', 'Nom', 'Prénom', 'CIN', 'Téléphone', 'Horaire',
@@ -1839,12 +1855,26 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
         ]],
         body: data,
         startY: 30,
-        styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [255, 215, 0] }
+        styles: {
+            fontSize: 8,
+            cellPadding: 2,
+            lineColor: [0, 0, 0], // black borders
+            lineWidth: 0.2,
+            textColor: [0, 0, 0]
+        },
+        headStyles: {
+            fillColor: [200, 200, 200], // gray header
+            textColor: [0, 0, 0],
+            fontStyle: 'bold'
+        },
+        alternateRowStyles: {
+            fillColor: [245, 245, 245]
+        }
     });
 
-    doc.save(`Mozart_reservation.pdf`);
+    doc.save(fileName);
 }
+
 
 }
 
