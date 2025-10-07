@@ -1781,7 +1781,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
     XLSX.utils.book_append_sheet(wb, ws, 'Réservations');
     XLSX.writeFile(wb, fileName);
 }
-
+}
 
 // Initialize agenda manager when DOM is loaded
 let agendaManager;
