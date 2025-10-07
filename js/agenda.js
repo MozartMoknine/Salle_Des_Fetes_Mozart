@@ -1839,7 +1839,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
     doc.save(`Mozart_reservation.pdf`);
 }
 
-
+}
 
 // Initialize agenda manager when DOM is loaded
 let agendaManager;
