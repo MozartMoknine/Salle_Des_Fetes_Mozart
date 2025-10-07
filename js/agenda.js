@@ -42,6 +42,11 @@ class AgendaManager {
         if (downloadBtn) {
             downloadBtn.addEventListener('click', () => this.downloadExcel());
         }
+        // pdf download button
+        const downloadPDFBtn = document.getElementById('download-pdf-btn');
+        if (downloadPDFBtn) {
+            downloadPDFBtn.addEventListener('click', () => this.exportToPDF());
+        }
 
         // Availability calendar controls
         const availabilityYear = document.getElementById('availability-year');
