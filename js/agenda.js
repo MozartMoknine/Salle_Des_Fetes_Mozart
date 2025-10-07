@@ -1692,21 +1692,39 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
 
         const fileName = `Mozart_reservation_${titlePart}.xlsx`;
 
-        const data = this.filteredReservations.map(res => ({
-            'Date': new Date(res.date_res).toLocaleDateString('fr-FR'),
-            'Nom': res.nom || '',
-            'Prénom': res.prenom || '',
-            'CIN': res.cin || '',
-            'Téléphone 1': res.tel1 || '',
-            'Téléphone 2': res.tel2 || '',
-            'Horaire': res.horaire || '',
-            'Type Événement': res.event_type || '',
-            'Options': res.options || '',
-            'Montant Total (DT)': res.montant_tot || 0,
-            'Avance (DT)': res.avance || 0,
-            'Reste (DT)': res.montant_rest || 0,
-            'Notes': res.notes || ''
-        }));
+        const data = this.filteredReservations.map(res => {
+    const noteLines = (res.notes || '').split('\n').map(line => line.trim()).filter(line => line);
+    const firstLine = noteLines[0] || '';
+    const otherLines = noteLines.slice(1);
+
+    const optionLines = [];
+    const manualNotes = [];
+
+    otherLines.forEach(line => {
+        if (line.includes('Café Turk') || line.includes('Jeux de lumière')) {
+            optionLines.push(line);
+        } else {
+            manualNotes.push(line);
+        }
+    });
+
+    return {
+        'Date': new Date(res.date_res).toLocaleDateString('fr-FR'),
+        'Nom': res.nom || '',
+        'Prénom': res.prenom || '',
+        'CIN': res.cin || '',
+        'Téléphone 1': res.tel1 || '',
+        'Téléphone 2': res.tel2 || '',
+        'Horaire': res.horaire || '',
+        'Type Événement': firstLine || res.event_type || '',
+        'Options': [res.options, ...optionLines].filter(Boolean).join('\n'),
+        'Montant Total (DT)': res.montant_tot || 0,
+        'Avance (DT)': res.avance || 0,
+        'Reste (DT)': res.montant_rest || 0,
+        'Notes': manualNotes.join('\n')
+    };
+});
+
 
         const ws = XLSX.utils.json_to_sheet(data);
 
