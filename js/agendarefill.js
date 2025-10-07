@@ -27,7 +27,7 @@ class agendarefill {
 setDefaults() {
    const hor = document.getElementsByName('horaire')[0];
   if (hor) {
-        hor.value = 'Nuit'; // Set default horaire
+        hor.value = 'nuit'; // Set default horaire
   }
     
   
