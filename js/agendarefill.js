@@ -25,10 +25,10 @@ class agendarefill {
     this.setDefaults();
   }
 setDefaults() {
-   const hor=  this.form.querySelector('select[name="horaire"]');
- 
+   const hor = document.getElementsByName('horaire')[0];
+  if (hor) {
         hor.value = 'Nuit'; // Set default horaire
-    
+  }
   
    const ev = document.getElementById('event-type');
 const lt = document.getElementById('light-option');
@@ -254,6 +254,9 @@ if (isPast) {
   }
 
   bindEvents() {
+
+   
+    
     // Auto-check "Jeux de lumière" if event type is Mariage
         const eventType =  document.getElementById('event-type');
           const lightOptions = this.form.querySelector('input[name="options"][value="Jeux de lumière"]');
