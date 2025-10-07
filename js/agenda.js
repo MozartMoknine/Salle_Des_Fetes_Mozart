@@ -1,4 +1,4 @@
-
+ 
 // Agenda management with Supabase integration 
 class AgendaManager {
     constructor() {
