@@ -1669,7 +1669,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
   };
     }
 
-    downloadExcel() {
+  downloadExcel() {
     const monthNames = {
         '1': 'Janvier', '2': 'Février', '3': 'Mars', '4': 'Avril',
         '5': 'Mai', '6': 'Juin', '7': 'Juillet', '8': 'Août',
@@ -1781,6 +1781,64 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
     XLSX.utils.book_append_sheet(wb, ws, 'Réservations');
     XLSX.writeFile(wb, fileName);
 }
+
+    exportToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const data = this.filteredReservations.map(res => {
+        const rawNotes = res.notes || '';
+        const noteLines = rawNotes.split('\n').map(line => line.trim()).filter(line => line);
+
+        const firstLine = noteLines[0] || '';
+        const remainingLines = noteLines.slice(1);
+
+        const optionExtras = [];
+        const manualNotes = [];
+
+        for (const line of remainingLines) {
+            if (line.includes('Café Turk') || line.includes('Jeux de lumière')) {
+                optionExtras.push(line);
+            } else {
+                manualNotes.push(line);
+            }
+        }
+
+        const finalEventType = firstLine || res.event_type || '';
+        const finalOptions = [res.options, ...optionExtras].filter(Boolean).join(', ');
+        const finalNotes = manualNotes.join(', ');
+
+        return [
+            new Date(res.date_res).toLocaleDateString('fr-FR'),
+            res.nom || '',
+            res.prenom || '',
+            res.cin || '',
+            res.tel1 || '',
+            res.horaire || '',
+            finalEventType,
+            finalOptions,
+            `${res.montant_tot || 0} DT`,
+            `${res.avance || 0} DT`,
+            `${res.montant_rest || 0} DT`,
+            finalNotes
+        ];
+    });
+
+    doc.text("Réservations Mozart", 14, 20);
+    doc.autoTable({
+        head: [[
+            'Date', 'Nom', 'Prénom', 'CIN', 'Téléphone', 'Horaire',
+            'Type Événement', 'Options', 'Montant Total', 'Avance', 'Reste', 'Notes'
+        ]],
+        body: data,
+        startY: 30,
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [255, 215, 0] }
+    });
+
+    doc.save(`Mozart_reservation.pdf`);
+}
+
 }
 
 // Initialize agenda manager when DOM is loaded
