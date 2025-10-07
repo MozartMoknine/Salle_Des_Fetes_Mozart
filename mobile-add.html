@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelle Réservation - Mobile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: '#FFD700',
+                        darkgold: '#B8860B',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin: 10px;
+            padding: 20px;
+            max-width: 500px;
+            margin: 10px auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #FFD700;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        
+        .radio-option {
+            flex: 1;
+            position: relative;
+        }
+        
+        .radio-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+        
+        .radio-option label {
+            display: block;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            background: #f9fafb;
+        }
+        
+        .radio-option input[type="radio"]:checked + label {
+            border-color: #FFD700;
+            background: #FFD700;
+            color: #000;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+        }
+        
+        .checkbox-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9fafb;
+        }
+        
+        .checkbox-option:has(input:checked) {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+        
+        .checkbox-option input[type="checkbox"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+            accent-color: #FFD700;
+        }
+        
+        .warning {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            border: 1px solid #f87171;
+            color: #b91c1c;
+            padding: 16px;
+            border-radius: 12px;
+            margin: 16px 0;
+            font-weight: 600;
+            display: none;
+        }
+        
+        .success-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .success-modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin: 20px;
+            max-width: 300px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-icon {
+            font-size: 60px;
+            color: #10b981;
+            margin-bottom: 20px;
+        }
+        
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 12px;
+        }
+        
+        .modal-text {
+            color: #6b7280;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+        
+        .modal-button {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+        }
+        
+        .header {
+            text-align: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        @media (max-width: 480px) {
+            .form-container {
+                margin: 5px;
+                padding: 16px;
+                border-radius: 16px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="back-button" onclick="window.history.back()">
+        <i class="fas fa-arrow-left"></i>
+    </button>
+
+    <div class="header">
+        <h1><i class="fas fa-music"></i> Salle Mozart</h1>
+        <p>Nouvelle Réservation</p>
+    </div>
+
+    <div class="form-container">
+        <form id="reservation-form">
+            <div class="form-group">
+                <label class="form-label">Nom *</label>
+                <input type="text" name="nom" class="form-input" required placeholder="Nom de famille">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Prénom *</label>
+                <input type="text" name="prenom" class="form-input" required placeholder="Prénom">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">CIN</label>
+                <input type="number" name="cin" class="form-input" pattern="[0-9]{8}" maxlength="8" placeholder="8 chiffres">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Téléphone 1</label>
+                <input type="number" name="tel1" class="form-input" pattern="[0-9]{8}" maxlength="8" placeholder="8 chiffres">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Téléphone 2</label>
+                <input type="number" name="tel2" class="form-input" pattern="[0-9]{8}" maxlength="8" placeholder="8 chiffres">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Date de l'événement *</label>
+                <input type="date" name="date_res" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Horaire *</label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" name="horaire" value="nuit" id="nuit" required>
+                        <label for="nuit">Nuit</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" name="horaire" value="apres-midi" id="apres-midi" required>
+                        <label for="apres-midi">Après-midi</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Montant Total (DT) *</label>
+                <input type="number" name="montant_tot" class="form-input" required min="1" placeholder="4200" value="4200">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Avance (DT) *</label>
+                <input type="number" name="avance" class="form-input" required min="1" placeholder="500" value="500">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Type d'événement *</label>
+                <select name="event_type" class="form-select" id="event-type" required>
+                    <option value="Mariage">Mariage</option>
+                    <option value="Henna">Henna</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Options supplémentaires</label>
+                <div class="checkbox-group">
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="options" value="Café Turk" id="cafe">
+                        <label for="cafe">Café Turk</label>
+                    </div>
+                    <div class="checkbox-option">
+                        <input type="checkbox" name="options" value="Jeux de lumière" id="light-option" checked>
+                        <label for="light-option">Jeux de lumière</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Notes supplémentaires</label>
+                <textarea name="notes_manual" class="form-input" rows="3" placeholder="Ajoutez vos notes ici..."></textarea>
+            </div>
+
+            <div id="availability-warning" class="warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                Cette date et horaire ne sont pas disponibles
+            </div>
+
+            <button type="submit" class="btn-primary" id="submit-btn">
+                <i class="fas fa-save"></i> Enregistrer la Réservation
+            </button>
+        </form>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="success-modal">
+        <div class="modal-content">
+            <div class="modal-icon">✅</div>
+            <div class="modal-title">Réservation Enregistrée!</div>
+            <div class="modal-text">La réservation a été ajoutée avec succès.</div>
+            <button id="close-modal" class="modal-button">OK</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/mobile-add.js"></script>
+</body>
+</html>

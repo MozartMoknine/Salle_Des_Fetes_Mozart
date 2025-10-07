@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouveau Contrat - Salle des Fêtes Mozart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+ 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: '#FFD700',
+                        darkgold: '#B8860B',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/contract.css">
+  <style>
+
+
+    
+ /*new */
+    #calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-top: 1rem;
+}
+ 
+
+
+.calendar-day:hover {
+  border-color: #FFD700;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.calendar-day.available {
+  background: #d4edda;
+  border-color: #27ae60;
+  color: #155724;
+}
+
+.calendar-day.nuitreserved {
+  background: #f8d7da;
+  border-color: #e74c3c;
+  color: #721c24;
+}
+
+.calendar-day.bg-yellow-100 {
+  background: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.calendar-day.selected {
+  background: #FFD700;
+  border-color: #FFA500;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+
+
+
+    /*++*/
+    /* Base style for all calendar-day cells */
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 4px;
+}
+
+/* Available slot */
+.calendar-day.available {
+  background-color: #d4edda;
+  border-color: #27ae60;
+  color: #155724;
+}
+
+/* Reserved for Nuit only */
+.calendar-day.nuitbooked {
+  background-color: black;
+  border-color: yellow;
+  color: white;  
+}
+
+/* Reserved for Après-Midi only */
+.calendar-day.apres-midibooked {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+/* Reserved for both Nuit and Après-Midi */
+.calendar-day.fullybooked {
+  background: repeating-linear-gradient(
+    45deg,
+    lightblue,
+    #f8d7da 10px,
+    #fff3cd 10px,
+    #fff3cd 20px
+  );
+  border-color: #e74c3c;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+/* Hover effect */
+.calendar-day:hover {
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3);
+  transform: translateY(-2px);
+  font-weight:bold;
+}
+
+/* Selected day */
+.calendar-day.selected {
+  background-color: #FFD700;
+  border-color: #B8860B;
+  color: #2c3e50;
+  font-weight: bold;
+}
+.calendar-day.today {
+  background-color: #cce5ff;
+  border-color: #339af0;
+  color: #004085;
+  box-shadow: inset 0 0 0 0.2px #339af0;
+  font-weight: bold; 
+}
+.calendar-day.pastday {
+  background-color: #f0f0f0;
+  color: #999;
+  border-color: #ccc;
+  pointer-events: none;
+  opacity: 0.6;
+}
+    
+    /* Toast animations */
+    #toast {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    
+    #toast:not(.hidden) {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    
+   /* Calendar specific styles */
+     .calendar-day {
+  aspect-ratio: 1;
+}
+
+    .calendar-container {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      padding: 2rem;
+      border: 1px solid #e8ecef;
+    }
+
+    .calendar-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .calendar-controls select {
+      padding: 12px 15px;
+      border: 2px solid #e8ecef;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #fafbfc;
+      transition: all 0.3s ease;
+    }
+
+    .calendar-controls select:focus {
+      outline: none;
+      border-color: #FFD700;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+    }
+
+    #calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-top: 1rem;
+    }
+
+    .calendar-header {
+      background: #2c3e50;
+      color: white;
+      padding: 12px 8px;
+      text-align: center;
+      font-weight: bold;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #e8ecef;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      min-height: 50px;
+    }
+
+    .calendar-day:hover {
+      border-color: #FFD700;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    }
+
+    .calendar-day.available {
+      background: #d4edda;
+      border-color: #27ae60;
+      color: #155724;
+    }
+
+    .calendar-day.nuitreserved {
+      background: orangered;
+      border-color: #e74c3c;
+      color: #721c24;
+    }
+
+      .calendar-day.apresmidireserved {
+      background: greenyellow;
+      border-color: #yellow;
+      color: #721c24;
+    }
+
+    .calendar-day.other-month {
+      background: #f8f9fa;
+      color: #6c757d;
+      border-color: #dee2e6;
+    }
+
+    .calendar-day.selected {
+      background: #FFD700;
+      border-color: #FFA500;
+      color: #2c3e50;
+      font-weight: bold;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 2px solid;
+    }
+
+    .legend-available .legend-color {
+      background: #d4edda;
+      border-color: #27ae60;
+    }
+
+    .legend-reserved .legend-color {
+      background: #f8d7da;
+      border-color: #e74c3c;
+    }
+
+    .selected {
+  outline: 2px solid #f59e0b; /* gold */
+  outline-offset: -2px;
+  border-radius: 0.5rem; /* match your rounded class */
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3); /* subtle glow */
+}
+
+
+  </style>
+  <style>
+  @media PRINT {
+    body * {
+      visibility: hidden;
+    }
+    #PRINT, #PRINT * {
+      visibility: visible;
+    }
+    #PRINT {
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+    }
+  }
+</style>
+
+</head>
+<body class="bg-gray-50">
+  <div id="loading-overlay" style="
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+">
+  <div style="
+    width: 48px;
+    height: 48px;
+    border: 6px solid #FFD700;
+    border-top: 6px solid #333;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  "></div>
+    <p style="color: #444; font-size: 16px;">&nbsp;Chargement des données...</p>
+</div>
+
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
+    <!-- Navigation -->
+    <nav class="bg-black shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-music text-gold text-2xl"></i>
+                    <h1 class="text-white text-xl font-bold">Salle des Fêtes Mozart</h1>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.html" class="nav-link">Accueil</a>
+                    <a href="contract.html" class="nav-link active">Nouveau Contrat</a>
+                    <a href="agenda.html" class="nav-link">Agenda Mozart</a>
+                  <a href="agendarefill.html" class="nav-link">Ajout Contrat</a>
+                    <a href="calendar.html" class="nav-link">Calendrier Visuel</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-white">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-900">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="index.html" class="mobile-nav-link">Accueil</a>
+                <a href="contract.html" class="mobile-nav-link active">Nouveau Contrat</a>
+                <a href="agenda.html" class="mobile-nav-link">Agenda Mozart</a>
+              <a href="agendarefill.html" class="mobile-nav-link">Ajout Contrat</a>
+                <a href="calendar.html" class="mobile-nav-link">Calendrier Visuel</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8 text-gray-800">Nouveau Contrat</h1>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Contract Form -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-semibold mb-6 text-gray-800">Informations du Contrat</h2>
+                <form id="contract-form" class="space-y-4" autocomplete="off">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="nom" class="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
+                            <input type="text" id="nom" name="nom" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                        </div>
+                        <div>
+                            <label for="prenom" class="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
+                            <input type="text" id="prenom" name="prenom" required 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="cin" class="block text-sm font-medium text-gray-700 mb-1">CIN *</label>
+                        <input type="number" id="cin" name="cin" pattern="[0-9]{8}" maxlength="8" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="telephone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone 1 *</label>
+                            <input type="number" id="telephone" name="telephone" required pattern="[0-9]{8}" maxlength="8"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                            <small class="text-gray-500">8 chiffres requis</small>
+                        </div>
+                        <div>
+                            <label for="telephone2" class="block text-sm font-medium text-gray-700 mb-1">Téléphone 2</label>
+                            <input type="number" id="telephone2" name="telephone2" pattern="[0-9]{8}" maxlength="8"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                            <small class="text-gray-500">8 chiffres requis</small>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date de l'événement *</label>
+                        <input type="date" placeholder="JJ/MM/AAAA"
+ id="date" name="date" required 
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="montant" class="block text-sm font-medium text-gray-700 mb-1">Montant Complet (DT) *</label>
+                            <input type="number" id="montant" name="montant" value="4200" required min="1"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                        </div>
+                        <div>
+                            <label for="avance" class="block text-sm font-medium text-gray-700 mb-1">Avance (DT) *</label>
+                            <input type="number" id="avance" name="avance" value="500" required min="1"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                        </div>
+                    </div>
+
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Horaire *</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="horaire" value="nuit" checked class="mr-2">
+                                <span>Nuit</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="horaire" value="apres-midi" class="mr-2">
+                                <span>Après-Midi</span>
+                            </label>
+                          
+                            
+                        </div>
+                      
+                    </div>
+                  
+                  </div>
+
+
+                   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                     
+                  <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Type d'événement *</label>
+            <select class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold" name="event_type" id="event-type" required>
+              <option value="Mariage">Mariage</option>
+              <option value="Henna">Henna</option>
+            </select>
+                     </div>
+                      <div>
+<label class="block text-sm font-medium text-gray-700 mb-1">Options supplémentaires</label>
+            <div class="options">
+              <label>
+                <input type="checkbox" name="options" value="Café Turk" />
+                Café Turk
+              </label>
+              <label>
+                <input type="checkbox" name="options" value="Jeux de lumière" id="light-option" />
+                Jeux de lumière
+              </label>
+            </div>
+          </div>
+                  </div>
+                
+
+         
+
+         <div id="availability-warning" style="display:none;color:#c00"></div>
+
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                      <input type="text" name="fake-user" autocomplete="off" style="display:none;">
+                        <textarea id="notes" name="custom_notes_xyz" rows="3" autocomplete="off"
+  autocorrect="off"
+  autocapitalize="off"
+  spellcheck="false"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
+                                  placeholder="Ajoutez vos notes ici..."></textarea>
+                    </div>
+
+         <!-- Enhanced Availability Warning -->
+         <div id="availability-warning-enhanced" class="hidden bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-400 p-4 rounded-lg shadow-sm mb-4">
+           <div class="flex items-center">
+             <div class="flex-shrink-0">
+               <i class="fas fa-exclamation-triangle text-red-400 text-xl"></i>
+             </div>
+             <div class="ml-3">
+               <p class="text-sm text-red-700 font-medium" id="warning-message">
+                 Cette date et horaire ne sont pas disponibles
+               </p>
+               <p class="text-xs text-red-600 mt-1">
+                 Veuillez choisir une autre date ou un autre horaire
+               </p>
+             </div>
+           </div>
+         </div>
+
+                  
+                    
+                    <div class="flex space-x-4 pt-4">
+                        <button type="submit" id="save-btn" class="bg-gold text-black px-6 py-2 rounded-md font-semibold hover:bg-darkgold transition-colors">
+                            Enregistrer Contrat
+                        </button>
+                        <button type="button" id="print-btn" class="bg-gray-600 text-white px-6 py-2 rounded-md font-semibold hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-print mr-2"></i>Imprimer
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- SVG Preview -->
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-semibold mb-6 text-gray-800">Aperçu du Contrat</h2>
+                <div id="contract-preview" class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                    <svg id="contract-svg" width="100%" height="600" viewBox="0 0 400 600" class="bg-white rounded">
+                        <!-- Contract SVG content will be generated here -->
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+  <!--  Availability Table    -->
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 md:mb-0">Disponibilités</h2>
+                    <div class="flex gap-4">
+                        <select id="availability-year" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                            <!-- Years will be populated by JavaScript -->
+                        </select>
+                        <select id="availability-month" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                            <option value="1">Janvier</option>
+                            <option value="2">Février</option>
+                            <option value="3">Mars</option>
+                            <option value="4">Avril</option>
+                            <option value="5">Mai</option>
+                            <option value="6">Juin</option>
+                            <option value="7">Juillet</option>
+                            <option value="8">Août</option>
+                            <option value="9">Septembre</option>
+                            <option value="10">Octobre</option>
+                            <option value="11">Novembre</option>
+                            <option value="12">Décembre</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div id="availability-calendar" class="grid grid-cols-7 gap-2">
+                    <!-- Calendar will be generated here -->
+                </div>
+            </div>
+        </div>
+
+
+    <!-- Success Modal -->
+    <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-sm mx-4">
+            <div class="text-center">
+                <i class="fas fa-check-circle text-green-500 text-4xl mb-4"></i>
+                <h3 class="text-lg font-semibold mb-2">Reservation Enregistrée!</h3>
+                <p class="text-gray-600 mb-4">La réservation a été enregistrée avec succès.</p>
+                <button id="close-modal" class="bg-gold text-black px-4 py-2 rounded-md font-semibold hover:bg-darkgold transition-colors">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+
+<!-- Complet Modal alert -->
+<div id="complet-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+  <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm text-center">
+    <h2 class="text-lg font-semibold text-red-600 mb-2">Date Complet</h2>
+    <p id="complet-message" class="text-gray-700 mb-4"></p>
+    <button id="close-complet" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+      OK
+    </button>
+  </div>
+</div>
+
+  <!-- Toast Notification booked partially-->
+<div id="toast" class="fixed top-20 right-6 bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-2 rounded shadow-lg hidden z-50 transition-all duration-300">
+  <span id="toast-message"></span>
+</div>
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
+    
+    <!-- Mobile Menu Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+    
+    <script> 
+        // Protect this page - require authentication
+        document.addEventListener('DOMContentLoaded', () => {
+  const loader = document.getElementById('loading-overlay');
+  if (loader) loader.style.display = 'flex'; // Show loader
+
+  setTimeout(() => {
+    if (authManager && !authManager.requireAuth()) {
+      return; // Will redirect to login
+    }
+
+    // Authenticated: hide loader and show UI
+    if (loader) loader.style.display = 'none';
+
+    if (authManager) {
+      authManager.addLogoutButton();
+    }
+  }, 500);
+});
+
+    </script>
+  <script type="module">
+        import { ContractPreview } from './js/contract.js';
+        
+        let contractPreview;
+        
+        // Initialize the contract preview when DOM is loaded
+        document.addEventListener('DOMContentLoaded', async () => {
+            contractPreview = new ContractPreview('#contract-form', '#contract-svg');
+        });
+        
+        // Make download function global
+        window.downloadContract = function() {
+            if (contractPreview) {
+                const form = document.getElementById('contract-form');
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData);
+                
+                const filename = `contrat-${data.nom || 'client'}-${data.prenom || ''}-${new Date().getTime()}.svg`;
+                contractPreview.downloadSVG(filename);
+            } else {
+                alert('Le générateur de contrat n\'est pas encore initialisé. Veuillez patienter...');
+            }
+        };
+    </script>
+
+  <div id="print-confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm w-full text-center">
+    <h2 class="text-xl font-bold text-gray-800 mb-4">Enregistrement requis</h2>
+    <p class="text-gray-600 mb-6">Veuillez enregistrer la réservation avant d'imprimer.</p>
+    <div class="flex justify-center gap-4">
+      <button id="confirm-print" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">✅ Enregistrer & Imprimer</button>
+      <button id="cancel-print" class="bg-gray-400 text-white px-4 py-2 rounded hover:bg-gray-500 transition">❌ Annuler</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

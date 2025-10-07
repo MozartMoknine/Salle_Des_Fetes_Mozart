@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nouvelle Réservation - Salle des Fêtes Mozart</title>
+   <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: '#FFD700',
+                        darkgold: '#B8860B',
+                    }
+                }
+            }
+        }
+    </script>
+   <style>
+    /* Calendar specific styles */
+     .calendar-day {
+  aspect-ratio: 1;
+}
+
+    .calendar-container {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      padding: 2rem;
+      border: 1px solid #e8ecef;
+    }
+
+    .calendar-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .calendar-controls select {
+      padding: 12px 15px;
+      border: 2px solid #e8ecef;
+      border-radius: 8px;
+      font-size: 1rem;
+      background: #fafbfc;
+      transition: all 0.3s ease;
+    }
+
+    .calendar-controls select:focus {
+      outline: none;
+      border-color: #FFD700;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+    }
+
+    #calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px;
+      margin-top: 1rem;
+    }
+
+    .calendar-header {
+      background: #2c3e50;
+      color: white;
+      padding: 12px 8px;
+      text-align: center;
+      font-weight: bold;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #e8ecef;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      min-height: 50px;
+    }
+
+    .calendar-day:hover {
+      border-color: #FFD700;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+    }
+
+    .calendar-day.available {
+      background: #d4edda;
+      border-color: #27ae60;
+      color: #155724;
+    }
+
+    .calendar-day.nuitreserved {
+      background: orangered;
+      border-color: #e74c3c;
+      color: #721c24;
+    }
+
+      .calendar-day.apresmidireserved {
+      background: greenyellow;
+      border-color: #yellow;
+      color: #721c24;
+    }
+
+    .calendar-day.other-month {
+      background: #f8f9fa;
+      color: #6c757d;
+      border-color: #dee2e6;
+    }
+
+    .calendar-day.selected {
+      background: #FFD700;
+      border-color: #FFA500;
+      color: #2c3e50;
+      font-weight: bold;
+    }
+
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 1px;
+      font-size: 0.9rem;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 2px solid;
+    }
+
+    .legend-available .legend-color {
+      background: #d4edda;
+      border-color: #27ae60;
+    }
+
+    .legend-reserved-nuit .legend-color {
+      background-color: black;
+    border-color: yellow;
+    color: white;
+    }
+
+     .legend-reserved-ap-m .legend-color {
+      background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+    }
+
+     .legend-reserved-full .legend-color {
+      background: repeating-linear-gradient(
+    45deg,
+    lightblue,
+    #f8d7da 10px,
+    #fff3cd 10px,
+    #fff3cd 20px
+  );
+  border-color: #e74c3c;
+  color: #2c3e50;
+  font-weight: bold;
+    }
+     
+
+    /* Success Modal */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 15px;
+      text-align: center;
+      max-width: 400px;
+      margin: 1rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .modal-icon {
+      font-size: 3rem;
+      color: #27ae60;
+      margin-bottom: 1rem;
+    }
+
+    .modal-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 1rem;
+    }
+
+    .modal-text {
+      color: #7f8c8d;
+      margin-bottom: 2rem;
+    }
+
+    .modal-button {
+      background: linear-gradient(135deg, #FFD700, #FFA500);
+      color: #2c3e50;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .modal-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      .calendar-controls {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+      
+      .legend {
+        gap: 1rem;
+      }
+      
+      .calendar-day {
+        min-height: 40px;
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+  <style>
+
+
+/* Main Content */
+.main-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+.page-title {
+  text-align: center;
+  color: #2c3e50;
+  font-size: 2.5rem;
+  margin-bottom: 3rem;
+  font-weight: 300;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+
+/* Form Section */
+.form-section {
+  background: white;
+  padding: 1rem;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border: 1px solid #e8ecef;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  margin-bottom: 2rem;
+  font-weight: 600;
+  border-bottom: 3px solid #FFD700;
+  padding-bottom: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #34495e;
+  font-size: 0.95rem;
+}
+
+.required::after {
+  content: " *";
+  color: #e74c3c;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e8ecef;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #fafbfc;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: #FFD700;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.1);
+}
+
+input:required {
+  border-left: 4px solid #e74c3c;
+}
+
+input:required:valid {
+  border-left: 4px solid #27ae60;
+}
+
+/* Options Section */
+.options {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.options label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.options label:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.options input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  transform: scale(1.2);
+  accent-color: #FFD700;
+}
+
+/* Warning Message */
+.warning {
+  background: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-weight: 600;
+  display: none;
+}
+
+
+
+/* Preview Section */
+.preview-section {
+  background: white;
+  padding: 2.5rem;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border: 1px solid #e8ecef;
+  height: fit-content;
+}
+
+.contract-preview {
+  width: 100%;
+  height: 600px;
+  border: 2px solid #e8ecef;
+  border-radius: 10px;
+  background: #fafbfc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .nav-menu {
+    gap: 1rem;
+  }
+  
+  .nav-menu a {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-container {
+    flex-direction: column;
+    height: auto;
+    padding: 1rem;
+    gap: 1rem;
+  }
+  
+  .nav-menu {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .options {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .main-container {
+    padding: 0 1rem;
+  }
+  
+  .form-section, .preview-section {
+    padding: 1.5rem;
+  }
+  
+  .page-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .logo {
+    font-size: 1.2rem;
+  }
+  
+  .page-title {
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+  }
+  
+  .form-section, .preview-section {
+    padding: 1rem;
+  }
+}
+
+/* Helper text */
+.helper-text {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+  margin-top: 0.25rem;
+}
+
+/* Success state */
+.success {
+  border-color: #27ae60 !important;
+  background: #f8fff9;
+}
+
+/* Error state */
+.error {
+  border-color: #e74c3c !important;
+  background: #fff8f8;
+}
+
+/* Loading state */
+.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-section, .preview-section {
+  animation: fadeIn 0.6s ease-out;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #FFD700;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FFA500;
+}
+
+
+
+    /*new */
+    #calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-top: 1rem;
+}
+ 
+
+
+.calendar-day:hover {
+  border-color: #FFD700;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.calendar-day.available {
+  background: #d4edda;
+  border-color: #27ae60;
+  color: #155724;
+}
+
+.calendar-day.nuitreserved {
+  background: #f8d7da;
+  border-color: #e74c3c;
+  color: #721c24;
+}
+
+.calendar-day.bg-yellow-100 {
+  background: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+.calendar-day.selected {
+  background: #FFD700;
+  border-color: #FFA500;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+
+
+
+    /*++*/
+    /* Base style for all calendar-day cells */
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 4px;
+}
+
+/* Available slot */
+.calendar-day.available {
+  background-color: #d4edda;
+  border-color: #27ae60;
+  color: #155724;
+}
+
+/* Reserved for Nuit only */
+.calendar-day.nuitbooked {
+  background-color: black;
+  border-color: yellow;
+  color: white;  
+}
+
+/* Reserved for Après-Midi only */
+.calendar-day.apres-midibooked {
+  background-color: #fff3cd;
+  border-color: #ffc107;
+  color: #856404;
+}
+
+/* Reserved for both Nuit and Après-Midi */
+.calendar-day.fullybooked {
+  background: repeating-linear-gradient(
+    45deg,
+    lightblue,
+    #f8d7da 10px,
+    #fff3cd 10px,
+    #fff3cd 20px
+  );
+  border-color: #e74c3c;
+  color: #2c3e50;
+  font-weight: bold;
+}
+
+/* Hover effect */
+.calendar-day:hover {
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3);
+  transform: translateY(-2px);
+  font-weight:bold;
+}
+
+/* Selected day */
+.calendar-day.selected {
+  background-color: #FFD700;
+  border-color: #B8860B;
+  color: #2c3e50;
+  font-weight: bold;
+}
+.calendar-day.today {
+  background-color: #cce5ff;
+  border-color: #339af0;
+  color: #004085;
+  box-shadow: inset 0 0 0 0.2px #339af0;
+  font-weight: bold; 
+}
+.calendar-day.pastday {
+  background-color: #f0f0f0;
+  color: #999;
+  border-color: #ccc;
+  pointer-events: none;
+  opacity: 0.6;
+}
+   
+
+  @media screen and (max-width: 768px) {
+
+
+  .main-container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  .form-section {
+    margin: 0 0.5rem;
+    padding: 1rem !important;
+    width: calc(100% - 1rem);
+    box-sizing: border-box;
+  }
+
+  .calendar-container {
+    margin: 0 0.5rem;
+    padding: 1rem !important;
+    width: calc(100% - 1rem);
+    box-sizing: border-box;
+  }
+
+  #calendar-grid {
+    gap: 4px;
+  }
+
+  .calendar-controls {
+    grid-template-columns: 1fr !important;
+  }
+
+}
+
+
+  
+  </style>
+  <link rel="stylesheet" href="styles/main.css">
+</head>
+<body class="bg-gray-50">
+  <div id="loading-overlay" style="
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+">
+  <div style="
+    width: 48px;
+    height: 48px;
+    border: 6px solid #FFD700;
+    border-top: 6px solid #333;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  "></div>
+    <p style="color: #444; font-size: 16px;">&nbsp;Chargement des données...</p>
+</div>
+
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
+    <!-- Navigation -->
+    <nav class="bg-black shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-music text-gold text-2xl"></i>
+                    <h1 class="text-white text-xl font-bold">Salle des Fêtes Mozart</h1>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.html" class="nav-link">Accueil</a>
+                    <a href="contract.html" class="nav-link">Nouveau Contrat</a>
+                    <a href="agenda.html" class="nav-link">Agenda Mozart</a>
+                  <a href="agendarefill.html" class="nav-link active">Ajout Contrat</a>
+                    <a href="calendar.html" class="nav-link">Calendrier Visuel</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-white">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-900">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="index.html" class="mobile-nav-link">Accueil</a>
+                <a href="contract.html" class="mobile-nav-link">Nouveau Contrat</a>
+                <a href="agenda.html" class="mobile-nav-link">Agenda Mozart</a>
+              <a href="agendarefill.html" class="mobile-nav-link active">Ajout Contrat</a>
+                <a href="calendar.html" class="mobile-nav-link">Calendrier Visuel</a>
+            </div>
+        </div>
+    </nav>
+
+  <!-- Main Content -->
+  <div class="main-container">
+    <h1 class="page-title">Nouvelle Réservation</h1>
+    
+    <div class="content-grid">
+      <!-- Form Section -->
+      <div class="form-section">
+        <h2 class="section-title">Informations du Contrat</h2>
+        
+        <form id="reservation-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="required">Nom</label>
+              <input name="nom" type="text" required placeholder="Nom de famille" />
+            </div>
+            <div class="form-group">
+              <label class="required">Prénom</label>
+              <input name="prenom" type="text" required placeholder="Prénom" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label >CIN</label>
+            <input type="number" name="cin" pattern="[0-9]{8}" maxlength="8" placeholder="Numéro CIN (8 chiffres)" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Téléphone 1</label>
+              <input name="tel1" type="number" pattern="[0-9]{8}" maxlength="8" placeholder="Numéro principal (8 chiffres)" />
+              <div class="helper-text">8 chiffres requis</div>
+            </div>
+            <div class="form-group">
+              <label>Téléphone 2</label>
+              <input name="tel2" type="number" pattern="[0-9]{8}" maxlength="8" placeholder="Numéro secondaire (8 chiffres)" />
+              <div class="helper-text">8 chiffres requis</div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="required">Date de l'événement</label>
+              <input type="date" name="date_res" required />
+            </div>
+            <div class="form-group">
+              <label class="required">Horaire</label>
+              <select name="horaire" required>
+                <option value="">Sélectionner...</option>
+                <option value="nuit">Nuit</option>
+                <option value="apres-midi">Après-midi</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="required">Montant Complet (DT)</label>
+              <input type="number" name="montant_tot" required min="1" />
+            </div>
+            <div class="form-group">
+              <label class="required">Avance (DT)</label>
+              <input type="number" name="avance" required min="1" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="required">Type d'événement</label>
+            <select name="event_type" id="event-type" required>
+              <option value="Mariage">Mariage</option>
+              <option value="Henna">Henna</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Options supplémentaires</label>
+            <div class="options">
+              <label>
+                <input type="checkbox" name="options" value="Café Turk" />
+                Café Turk
+              </label>
+              <label>
+                <input type="checkbox" name="options" value="Jeux de lumière" id="light-option" />
+                Jeux de lumière
+              </label>
+            </div>
+          </div>
+
+          <!-- Enhanced Availability Warning -->
+          <div id="availability-warning-enhanced" class="hidden bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-400 p-4 rounded-lg shadow-sm mb-4">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-red-400 text-xl"></i>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-red-700 font-medium" id="warning-message-refill">
+                  Cette date et horaire ne sont pas disponibles
+                </p>
+                <p class="text-xs text-red-600 mt-1">
+                  Veuillez choisir une autre date ou un autre horaire
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea name="notes_manual" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold" placeholder="Ajoutez vos notes ici..."></textarea>
+          </div>
+          <button class="bg-gold text-black px-6 py-2 rounded-md font-semibold hover:bg-darkgold transition-colors" type="submit" id="submit-btn">
+            💾 Enregistrer la Réservation
+          </button>
+        </form>
+      </div>
+
+      <!-- Calendar Section -->
+      <div class="calendar-container">
+        <h2 class="section-title">Disponibilité du Mois</h2>
+        
+        <div class="calendar-controls">
+          <select id="month-select">
+            <option value="0">Janvier</option>
+            <option value="1">Février</option>
+            <option value="2">Mars</option>
+            <option value="3">Avril</option>
+            <option value="4">Mai</option>
+            <option value="5">Juin</option>
+            <option value="6">Juillet</option>
+            <option value="7">Août</option>
+            <option value="8">Septembre</option>
+            <option value="9">Octobre</option>
+            <option value="10">Novembre</option>
+            <option value="11">Décembre</option>
+          </select>
+          <select id="year-select"></select>
+          <select id="horaire-view">
+            <option value="nuit">Nuit</option>
+            <option value="apres-midi">Après-midi</option>
+          </select>
+        </div>
+
+        <div id="calendar-grid">
+          <!-- Calendar will be generated by JavaScript -->
+        </div>
+
+        <div class="legend">
+          <div class="legend-item legend-available">
+            <div class="legend-color"></div>
+            <span>  Libre</span>
+          </div>
+          <div class="legend-item legend-reserved-nuit">
+            <div class="legend-color"></div>
+            <span>  Nuit Réservé</span>
+          </div>
+          <div class="legend-item legend-reserved-ap-m">
+            <div class="legend-color"></div>
+            <span>  Après-Midi Réservé</span>
+          </div>
+          <div class="legend-item legend-reserved-full">
+            <div class="legend-color"></div>
+            <span>  Complet</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div id="success-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-icon">✅</div>
+      <div class="modal-title">Réservation Enregistrée!</div>
+      <div class="modal-text">La réservation a été ajoutée avec succès à la base de données.</div>
+      <button id="close-modal" class="modal-button">OK</button>
+    </div>
+  </div>
+
+  
+
+  <script type="module" src="js/agendarefill.js"></script>
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
+
+    <script>
+        // Protect this page - require authentication
+        document.addEventListener('DOMContentLoaded', () => {
+  const loader = document.getElementById('loading-overlay');
+  if (loader) loader.style.display = 'flex'; // Show loader
+
+  setTimeout(() => {
+    if (authManager && !authManager.requireAuth()) {
+      return; // Will redirect to login
+    }
+
+    // Authenticated: hide loader and show UI
+    if (loader) loader.style.display = 'none';
+
+    if (authManager) {
+      authManager.addLogoutButton();
+    }
+  }, 500);
+            
+            // Mobile menu functionality
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

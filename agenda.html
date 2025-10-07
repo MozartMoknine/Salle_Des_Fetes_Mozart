@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+   <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda Mozart - Salle des Fêtes Mozart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        gold: '#FFD700',
+                        darkgold: '#B8860B',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="styles/main.css">
+  <style>
+    #success-modal.hidden {
+  display: none;
+}
+    
+    .mt-1.pt-6{
+      padding-top:0;
+      padding-bottom:0;
+    }
+    .p-3{
+          padding: 0.5rem !important;
+    }
+  </style>
+</head>
+<body class="bg-gray-50">
+  <!-- loading !-->
+  <div id="loading-overlay" style="
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+">
+  <div style="
+    width: 48px;
+    height: 48px;
+    border: 6px solid #FFD700;
+    border-top: 6px solid #333;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  "></div>
+    <p style="color: #444; font-size: 16px;">&nbsp;Chargement des données...</p>
+</div>
+
+<style>
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>
+
+  
+    <!-- Navigation -->
+    <nav class="bg-black shadow-lg">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-music text-gold text-2xl"></i>
+                    <h1 class="text-white text-xl font-bold">Salle des Fêtes Mozart</h1>
+                </div>
+                <div class="hidden md:flex space-x-6">
+                    <a href="index.html" class="nav-link">Accueil</a>
+                    <a href="contract.html" class="nav-link">Nouveau Contrat</a>
+                    <a href="agenda.html" class="nav-link active">Agenda Mozart</a>
+                   <a href="agendarefill.html" class="nav-link">Ajout Contrat</a>
+                    <a href="calendar.html" class="nav-link">Calendrier Visuel</a>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-white">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div> 
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-gray-900">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="index.html" class="mobile-nav-link">Accueil</a>
+                <a href="contract.html" class="mobile-nav-link">Nouveau Contrat</a>
+                <a href="agenda.html" class="mobile-nav-link active">Agenda Mozart</a>
+              <a href="agendarefill.html" class="mobile-nav-link">Ajout Contrat</a>
+                <a href="calendar.html" class="mobile-nav-link">Calendrier Visuel</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-4 md:mb-0">Agenda Mozart</h1>
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="relative">
+                   <form autocomplete="off" onsubmit="return false;">
+  <input  class="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold" 
+    id="search-input"
+    name="searchX123" 
+    type="text"
+    inputmode="search"
+    autocomplete="off"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    placeholder="Search..."
+  />  <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+</form>
+                </div>
+                <select id="month-filter" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                    <option value="">Tous les mois</option>
+                    <option value="1">Janvier</option>
+                    <option value="2">Février</option>
+                    <option value="3">Mars</option>
+                    <option value="4">Avril</option>
+                    <option value="5">Mai</option>
+                    <option value="6">Juin</option>
+                    <option value="7">Juillet</option>
+                    <option value="8">Août</option>
+                    <option value="9">Septembre</option>
+                    <option value="10">Octobre</option>
+                    <option value="11">Novembre</option>
+                    <option value="12">Décembre</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Reservations Table -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-8">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-800">Réservations à Venir</h2>
+            </div>
+            <div class="overflow-x-auto table-container">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-2 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-2 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                            <th class="px-2 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Horaire</th>
+                            <th class="px-2 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                            <th class="px-2 md:px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reservations-table" class="bg-white divide-y divide-gray-200">
+                        <!-- Reservations will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <button id="prev-mobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Précédent
+                    </button>
+                    <button id="next-mobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Suivant
+                    </button>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700" id="pagination-info">
+                            <!-- Pagination info will be displayed here -->
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" id="pagination-controls">
+                            <!-- Pagination controls will be generated here -->
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Availability Table -->
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 md:mb-0">Disponibilités</h2>
+                    <div class="flex gap-4">
+                        <select id="availability-year" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                            <!-- Years will be populated by JavaScript -->
+                        </select>
+                        <select id="availability-month" class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                            <option value="1">Janvier</option>
+                            <option value="2">Février</option>
+                            <option value="3">Mars</option>
+                            <option value="4">Avril</option>
+                            <option value="5">Mai</option>
+                            <option value="6">Juin</option>
+                            <option value="7">Juillet</option>
+                            <option value="8">Août</option>
+                            <option value="9">Septembre</option>
+                            <option value="10">Octobre</option>
+                            <option value="11">Novembre</option>
+                            <option value="12">Décembre</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <div id="availability-calendar" class="grid grid-cols-7 gap-2">
+                    <!-- Calendar will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reservation Details Modal -->
+    <div id="details-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 modal-overlay">
+        <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4 modal-content transform transition-all duration-300 scale-95 opacity-0">
+            <div class="px-6 py-4 bg-gradient-to-r from-gold to-darkgold text-black rounded-t-lg">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold">Détails de la Réservation</h3>
+                    <button id="close-details" class="text-black hover:text-gray-700 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6" id="details-content">
+                <!-- Details will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Password Modal -->
+    <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 modal-overlay">
+        <div class="bg-white rounded-lg shadow-2xl max-w-sm w-full mx-4 modal-content transform transition-all duration-300 scale-95 opacity-0">
+            <div class="px-6 py-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-t-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold flex items-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Confirmer la Suppression
+                    </h3>
+                    <button id="close-delete" class="text-white hover:text-gray-200 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-red-100 text-red-800 p-3 rounded-lg">
+                        <p class="font-semibold">⚠️ Attention: Cette action est irréversible!</p>
+                        <p class="text-sm mt-1">La réservation sera définitivement supprimée.</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Entrez votre mot de passe pour confirmer la suppression:</label>
+                        <input type="password" id="delete-password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-white" placeholder="Mot de passe">
+                    </div>
+                    <div id="delete-password-error" class="hidden text-red-100 bg-red-700 px-3 py-2 rounded-lg text-sm"></div>
+                    <div class="flex gap-3">
+                        <button id="cancel-delete" class="flex-1 bg-gray-500 text-white px-4 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-times mr-2"></i>
+                            Annuler
+                        </button>
+                        <button id="verify-delete-password" class="flex-1 bg-red-700 text-white px-4 py-3 rounded-lg font-semibold hover:bg-red-800 transition-colors">
+                            <i class="fas fa-trash mr-2"></i>
+                            Supprimer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Reservation Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 modal-overlay">
+        <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4 modal-content transform transition-all duration-300 scale-95 opacity-0">
+            <!-- Password Section -->
+            <div id="password-section" class="px-6 py-4 bg-gradient-to-r from-gold to-darkgold text-black rounded-t-lg">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold flex items-center">
+                        <i class="fas fa-lock mr-2"></i>
+                        Vérification du Mot de Passe
+                    </h3>
+                    <button id="close-edit" class="text-black hover:text-gray-700 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Entrez votre mot de passe pour continuer:</label>
+                        <input type="password" id="edit-password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-white" placeholder="Mot de passe">
+                    </div>
+                    <div id="password-error" class="hidden text-red-800 bg-red-100 px-3 py-2 rounded-lg text-sm"></div>
+                    <button id="verify-password" class="bg-black text-gold px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
+                        <i class="fas fa-unlock mr-2"></i>
+                        Vérifier
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Edit Form Section -->
+            <div id="edit-form-section" class="hidden p-6 max-h-96 overflow-y-auto">
+                <h3 class="text-xl font-bold mb-4 text-gray-800">Modifier la Réservation</h3>
+                <form id="edit-form" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nom</label>
+                            <input type="text" name="nom" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Prénom</label>
+                            <input type="text" name="prenom" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">CIN</label>
+                        <input type="number" name="cin" pattern="[0-9]{8}" maxlength="8" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone 1</label>
+                            <input type="number" name="tel1" pattern="[0-9]{8}" maxlength="8" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone 2</label>
+                            <input type="number" name="tel2" pattern="[0-9]{8}" maxlength="8" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                            <input type="date" name="date_res" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Horaire</label>
+                            <select name="horaire" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                                <option value="">Sélectionner...</option>
+                                <option value="nuit">Nuit</option>
+                                <option value="apres-midi">Après-Midi</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Montant Total (DT)</label>
+                            <input type="number" name="montant_tot" required min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Avance (DT)</label>
+                            <input type="number" name="avance" required min="1" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Reste à Payer (DT)</label>
+                        <input type="number" name="montant_rest" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Type d'événement</label>
+                            <select name="event_type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold">
+                                <option value="Mariage">Mariage</option>
+                                <option value="Henna">Henna</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Options supplémentaires</label>
+                            <div class="flex flex-col space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="options" value="Café Turk" class="mr-2">
+                                    <span>Café Turk</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="options" value="Jeux de lumière" class="mr-2">
+                                    <span>Jeux de lumière</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <textarea name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold"></textarea>
+                    </div>
+                    
+                    <!-- Enhanced Availability Warning for Edit Modal -->
+                    <div id="edit-availability-warning" class="hidden bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-400 p-4 rounded-lg shadow-sm mb-4">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-triangle text-red-400 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-red-700 font-medium" id="edit-warning-message">
+                                    Cette date et horaire ne sont pas disponibles
+                                </p>
+                                <p class="text-xs text-red-600 mt-1">
+                                    Veuillez choisir une autre date ou un autre horaire
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-4 pt-4">
+                        <button type="submit" class="bg-gold text-black px-6 py-3 rounded-lg font-semibold hover:bg-darkgold transition-colors">
+                            <i class="fas fa-save mr-2"></i>
+                            Enregistrer les Modifications
+                        </button>
+                        <button type="button" id="cancel-edit" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-times mr-2"></i>
+                            Annuler
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirm-edit-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 modal-overlay">
+        <div class="bg-white rounded-lg p-6 max-w-sm mx-4 modal-content transform transition-all duration-300 scale-95 opacity-0">
+            <div class="text-center">
+                <i class="fas fa-question-circle text-blue-500 text-4xl mb-4"></i>
+                <h3 class="text-lg font-semibold mb-2">Confirmer les Modifications</h3>
+                <p class="text-gray-600 mb-4">Êtes-vous sûr de vouloir enregistrer ces modifications?</p>
+                <div class="flex gap-4 justify-center">
+                    <button id="cancel-confirm-edit" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md font-semibold hover:bg-gray-400 transition-all duration-200 transform hover:scale-105">
+                        Annuler
+                    </button>
+                    <button id="confirm-edit-save" class="bg-blue-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-600 transition-all duration-200 transform hover:scale-105">
+                        Confirmer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/agenda.js"></script>
+
+    <script>
+        // Protect this page - require authentication
+        document.addEventListener('DOMContentLoaded', () => {
+            const loader = document.getElementById('loading-overlay');
+  if (loader) loader.style.display = 'flex'; // Show loader
+
+  setTimeout(() => {
+    if (authManager && !authManager.requireAuth()) {
+      return; // Will redirect to login
+    }
+
+    // Authenticated: hide loader and show UI
+    if (loader) loader.style.display = 'none';
+
+    if (authManager) {
+      authManager.addLogoutButton();
+    }
+  }, 800);
+            
+            // Mobile menu functionality
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+                
+                // Close menu when clicking outside
+                document.addEventListener('click', function(event) {
+                    if (!mobileMenuBtn.contains(event.target) && !mobileMenu.contains(event.target)) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            }
+        });
+    </script>
+
+  <div id="success-modal" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-lg p-6 max-w-sm text-center">
+    <h2 class="text-xl font-semibold text-green-600 mb-2">✅ Succès</h2>
+    <p class="text-gray-700 mb-4" id="success-message">Réservation modifiée avec succès</p>
+    <button id="success-close-btn" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-500">
+      Fermer
+    </button>
+  </div>
+</div>
+
+
+
+  <div id="delete-success-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-lg shadow-xl p-6 max-w-sm text-center animate-fade-in">
+    <div class="text-red-500 text-4xl mb-2">
+      <i class="fas fa-trash-alt"></i>
+    </div>
+    <h2 class="text-xl font-bold text-red-600 mb-2">Suppression réussie</h2>
+    <p class="text-gray-700 mb-4" id="delete-success-message">La réservation a été supprimée avec succès.</p>
+    <button id="delete-success-close-btn" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500">
+      Fermer
+    </button>
+  </div>
+</div>
+
+<style>
+@keyframes fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+</style>
+
+
+</body>
+</html>
