@@ -1,3 +1,5 @@
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 // Agenda management with Supabase integration 
 class AgendaManager {
     constructor() {
