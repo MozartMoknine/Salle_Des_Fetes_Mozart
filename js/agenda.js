@@ -36,6 +36,12 @@ class AgendaManager {
             monthFilter.addEventListener('change', (e) => this.handleMonthFilter(e.target.value));
         }
 
+        // Excel download button
+        const downloadBtn = document.getElementById('download-excel-btn');
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', () => this.downloadExcel());
+        }
+
         // Availability calendar controls
         const availabilityYear = document.getElementById('availability-year');
         const availabilityMonth = document.getElementById('availability-month');
@@ -1661,6 +1667,89 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
     f.contentWindow.print();
     document.body.removeChild(f);
   };
+    }
+
+    downloadExcel() {
+        const monthNames = {
+            '1': 'Janvier', '2': 'Février', '3': 'Mars', '4': 'Avril',
+            '5': 'Mai', '6': 'Juin', '7': 'Juillet', '8': 'Août',
+            '9': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+        };
+
+        const searchInput = document.getElementById('search-input');
+        const monthFilter = document.getElementById('month-filter');
+        const searchValue = searchInput ? searchInput.value.trim() : '';
+        const monthValue = monthFilter ? monthFilter.value : '';
+
+        let titlePart = '';
+        if (monthValue) {
+            titlePart = monthNames[monthValue];
+        } else if (searchValue) {
+            titlePart = searchValue;
+        } else {
+            titlePart = 'Toutes';
+        }
+
+        const fileName = `Mozart_reservation_${titlePart}.xlsx`;
+
+        const data = this.filteredReservations.map(res => {
+    const noteLines = (res.notes || '').split('\n').map(line => line.trim()).filter(line => line);
+    const firstLine = noteLines[0] || '';
+    const otherLines = noteLines.slice(1);
+
+    const optionLines = [];
+    const manualNotes = [];
+
+    otherLines.forEach(line => {
+        if (line.includes('Café Turk') || line.includes('Jeux de lumière')) {
+            optionLines.push(line);
+        } else {
+            manualNotes.push(line);
+        }
+    });
+
+    return {
+        'Date': new Date(res.date_res).toLocaleDateString('fr-FR'),
+        'Nom': res.nom || '',
+        'Prénom': res.prenom || '',
+        'CIN': res.cin || '',
+        'Téléphone 1': res.tel1 || '',
+        'Téléphone 2': res.tel2 || '',
+        'Horaire': res.horaire || '',
+        'Type Événement': firstLine || res.event_type || '',
+        'Options': [res.options, ...optionLines].filter(Boolean).join('\n'),
+        'Montant Total (DT)': res.montant_tot || 0,
+        'Avance (DT)': res.avance || 0,
+        'Reste (DT)': res.montant_rest || 0,
+        'Notes': manualNotes.join('\n')
+    };
+});
+
+
+        const ws = XLSX.utils.json_to_sheet(data);
+
+        const colWidths = [
+            { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 12 },
+            { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 15 },
+            { wch: 20 }, { wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 30 }
+        ];
+        ws['!cols'] = colWidths;
+
+        const range = XLSX.utils.decode_range(ws['!ref']);
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+            const address = XLSX.utils.encode_col(C) + '1';
+            if (!ws[address]) continue;
+            ws[address].s = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "FFD700" } },
+                alignment: { horizontal: "center", vertical: "center" }
+            };
+        }
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Réservations');
+
+        XLSX.writeFile(wb, fileName);
     }
 }
 
