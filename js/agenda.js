@@ -1670,88 +1670,118 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
     }
 
     downloadExcel() {
-        const monthNames = {
-            '1': 'Janvier', '2': 'Février', '3': 'Mars', '4': 'Avril',
-            '5': 'Mai', '6': 'Juin', '7': 'Juillet', '8': 'Août',
-            '9': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+    const monthNames = {
+        '1': 'Janvier', '2': 'Février', '3': 'Mars', '4': 'Avril',
+        '5': 'Mai', '6': 'Juin', '7': 'Juillet', '8': 'Août',
+        '9': 'Septembre', '10': 'Octobre', '11': 'Novembre', '12': 'Décembre'
+    };
+
+    const searchInput = document.getElementById('search-input');
+    const monthFilter = document.getElementById('month-filter');
+    const searchValue = searchInput ? searchInput.value.trim() : '';
+    const monthValue = monthFilter ? monthFilter.value : '';
+
+    const titlePart = monthValue ? monthNames[monthValue] : (searchValue || 'Toutes');
+    const fileName = `Mozart_reservation_${titlePart}.xlsx`;
+
+    const data = this.filteredReservations.map(res => {
+        const rawNotes = res.notes || '';
+        const noteLines = rawNotes.split('\n').map(line => line.trim()).filter(line => line);
+
+        const firstLine = noteLines[0] || '';
+        const remainingLines = noteLines.slice(1);
+
+        const optionExtras = [];
+        const manualNotes = [];
+
+        for (const line of remainingLines) {
+            if (line.includes('Café Turk') || line.includes('Jeux de lumière')) {
+                optionExtras.push(line);
+            } else {
+                manualNotes.push(line);
+            }
+        }
+
+        const finalEventType = firstLine || res.event_type || '';
+        const finalOptions = [res.options, ...optionExtras].filter(Boolean).join('\n');
+        const finalNotes = manualNotes.join('\n');
+
+        return {
+            'Date': new Date(res.date_res).toLocaleDateString('fr-FR'),
+            'Nom': res.nom || '',
+            'Prénom': res.prenom || '',
+            'CIN': res.cin || '',
+            'Téléphone 1': res.tel1 || '',
+            'Téléphone 2': res.tel2 || '',
+            'Horaire': res.horaire || '',
+            'Type Événement': finalEventType,
+            'Options': finalOptions,
+            'Montant Total (DT)': res.montant_tot || 0,
+            'Avance (DT)': res.avance || 0,
+            'Reste (DT)': res.montant_rest || 0,
+            'Notes': finalNotes
         };
-
-        const searchInput = document.getElementById('search-input');
-        const monthFilter = document.getElementById('month-filter');
-        const searchValue = searchInput ? searchInput.value.trim() : '';
-        const monthValue = monthFilter ? monthFilter.value : '';
-
-        let titlePart = '';
-        if (monthValue) {
-            titlePart = monthNames[monthValue];
-        } else if (searchValue) {
-            titlePart = searchValue;
-        } else {
-            titlePart = 'Toutes';
-        }
-
-        const fileName = `Mozart_reservation_${titlePart}.xlsx`;
-
-        const data = this.filteredReservations.map(res => {
-    const noteLines = (res.notes || '').split('\n').map(line => line.trim()).filter(line => line);
-    const firstLine = noteLines[0] || '';
-    const otherLines = noteLines.slice(1);
-
-    const optionLines = [];
-    const manualNotes = [];
-
-    otherLines.forEach(line => {
-        if (line.includes('Café Turk') || line.includes('Jeux de lumière')) {
-            optionLines.push(line);
-        } else {
-            manualNotes.push(line);
-        }
     });
 
-    return {
-        'Date': new Date(res.date_res).toLocaleDateString('fr-FR'),
-        'Nom': res.nom || '',
-        'Prénom': res.prenom || '',
-        'CIN': res.cin || '',
-        'Téléphone 1': res.tel1 || '',
-        'Téléphone 2': res.tel2 || '',
-        'Horaire': res.horaire || '',
-        'Type Événement': firstLine || res.event_type || '',
-        'Options': [res.options, ...optionLines].filter(Boolean).join('\n'),
-        'Montant Total (DT)': res.montant_tot || 0,
-        'Avance (DT)': res.avance || 0,
-        'Reste (DT)': res.montant_rest || 0,
-        'Notes': manualNotes.join('\n')
-    };
-});
+    const ws = XLSX.utils.json_to_sheet(data);
 
+    const colWidths = [
+        { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 12 },
+        { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 20 },
+        { wch: 20 }, { wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 30 }
+    ];
+    ws['!cols'] = colWidths;
 
-        const ws = XLSX.utils.json_to_sheet(data);
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    const headers = Object.keys(data[0]);
+    const dateColIndex = headers.indexOf('Date');
+    const eventTypeColIndex = headers.indexOf('Type Événement');
 
-        const colWidths = [
-            { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 12 },
-            { wch: 15 }, { wch: 15 }, { wch: 12 }, { wch: 15 },
-            { wch: 20 }, { wch: 15 }, { wch: 12 }, { wch: 12 }, { wch: 30 }
-        ];
-        ws['!cols'] = colWidths;
+    // Style header row
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+        const address = XLSX.utils.encode_col(C) + '1';
+        if (!ws[address]) continue;
 
-        const range = XLSX.utils.decode_range(ws['!ref']);
-        for (let C = range.s.c; C <= range.e.c; ++C) {
-            const address = XLSX.utils.encode_col(C) + '1';
-            if (!ws[address]) continue;
-            ws[address].s = {
-                font: { bold: true, color: { rgb: "FFFFFF" } },
-                fill: { fgColor: { rgb: "FFD700" } },
+        const header = ws[address].v;
+        let fillColor = "FFD700"; // default gold
+
+        if (header === 'Date') fillColor = "DDEBF7"; // light blue
+        if (header === 'Type Événement') fillColor = "FFF2CC"; // light yellow
+
+        ws[address].s = {
+            font: { bold: true, color: { rgb: "000000" } },
+            fill: { fgColor: { rgb: fillColor } },
+            alignment: { horizontal: "center", vertical: "center" }
+        };
+    }
+
+    // Style Date and Type Événement cells
+    for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+        const dateCell = XLSX.utils.encode_cell({ c: dateColIndex, r: R });
+        const eventCell = XLSX.utils.encode_cell({ c: eventTypeColIndex, r: R });
+
+        if (ws[dateCell]) {
+            ws[dateCell].s = {
+                fill: { fgColor: { rgb: "DDEBF7" } },
+                font: { color: { rgb: "000000" } },
                 alignment: { horizontal: "center", vertical: "center" }
             };
         }
 
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Réservations');
-
-        XLSX.writeFile(wb, fileName);
+        if (ws[eventCell]) {
+            ws[eventCell].s = {
+                fill: { fgColor: { rgb: "FFF2CC" } },
+                font: { color: { rgb: "000000" } },
+                alignment: { horizontal: "left", vertical: "center" }
+            };
+        }
     }
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Réservations');
+    XLSX.writeFile(wb, fileName);
 }
+
 
 // Initialize agenda manager when DOM is loaded
 let agendaManager;
