@@ -3,7 +3,7 @@ class AgendaManager {
     constructor() {
         this.supabaseUrl = 'https://qyskiegopptbugbbxbtp.supabase.co';
         this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5c2tpZWdvcHB0YnVnYmJ4YnRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NTM4MDYsImV4cCI6MjA3MzAyOTgwNn0.HbAJ3nJIeJShOv3huwkWZuUeKadVQfnXX_ow0zoKEeg';
-        
+         
         this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
         
         this.reservations = []; 
