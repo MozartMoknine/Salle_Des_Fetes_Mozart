@@ -47,7 +47,8 @@ if (ev && lt) {
         lt.checked = selected == 'Mariage';
     });
 }
-
+  
+document.getElementsByName('nom').focus();
 }
   setupFormValidation() {
     const cinInput = this.form.querySelector('input[name="cin"]');
