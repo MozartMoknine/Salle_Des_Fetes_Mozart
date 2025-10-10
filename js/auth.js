@@ -28,9 +28,10 @@ class AuthManager {
   const nameText = document.createElement('span');
   nameText.textContent = `👤 ${displayName}`;
 
-  nameSpan.appendChild(statusDot);
+  
   nameSpan.appendChild(nameText);
-
+nameSpan.appendChild(statusDot);
+      
  const logoutBtn = document.createElement('button');
 logoutBtn.className = 'flex items-center gap-1 px-3 py-1 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 transition duration-150 ease-in-out';
 
