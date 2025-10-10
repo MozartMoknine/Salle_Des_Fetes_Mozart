@@ -18,9 +18,18 @@ class AuthManager {
   const wrapper = document.createElement('div');
   wrapper.className = 'flex items-center justify-between px-4 text-white bg-gray-800 rounded-md mt-2 ';
 
+ // 👤 Status + Name block
   const nameSpan = document.createElement('span');
-  nameSpan.textContent = `👤 ${displayName} `;
-  nameSpan.className = 'text-sm mr-5';
+  nameSpan.className = 'text-sm mr-5 flex items-start gap-1';
+
+  const statusDot = document.createElement('span');
+  statusDot.className = 'status-dot';
+
+  const nameText = document.createElement('span');
+  nameText.textContent = `👤 ${displayName}`;
+
+  nameSpan.appendChild(statusDot);
+  nameSpan.appendChild(nameText);
 
  const logoutBtn = document.createElement('button');
 logoutBtn.className = 'flex items-center gap-1 px-3 py-1 bg-red-500 text-white text-xs font-medium rounded hover:bg-red-600 transition duration-150 ease-in-out';
