@@ -257,7 +257,25 @@ if (isPast) {
 
   bindEvents() {
 
-   
+   function capitalizeWords(value) {
+  return value
+    .toLowerCase()
+    .replace(/\b\w/g, char => char.toUpperCase());
+}
+
+const nomInput = document.getElementsByName('nom')[0];
+const prenomInput = document.getElementsByName('prenom')[0];
+
+[nomInput, prenomInput].forEach(input => {
+  if (input) {
+    input.addEventListener('input', () => {
+      const cursorPos = input.selectionStart;
+      input.value = capitalizeWords(input.value);
+      input.setSelectionRange(cursorPos, cursorPos); // preserve cursor position
+    });
+  }
+});
+
     
     // Auto-check "Jeux de lumière" if event type is Mariage
         const eventType =  document.getElementById('event-type');
