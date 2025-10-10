@@ -26,7 +26,7 @@ class AuthManager {
   statusDot.className = 'status-dot';
 
   const nameText = document.createElement('span');
-  nameText.textContent = `👤 ${displayName}`;
+  nameText.textContent = `🙎🏻‍♂️ ${displayName}`;
 
   
   nameSpan.appendChild(nameText);
