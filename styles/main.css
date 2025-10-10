@@ -280,3 +280,24 @@ html { scroll-behavior: smooth; }
    padding-bottom: 0.2rem;
 }
 
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  background-color: #00c853; /* green for online */
+  border-radius: 50%;
+  position: relative;
+  top: -2px;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.6;
+  }
+}
