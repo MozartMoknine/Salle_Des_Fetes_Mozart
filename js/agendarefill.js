@@ -382,6 +382,8 @@ if (isPast) {
 
       this.successModal.classList.add('show');
       this.form.reset();
+      this.setDefaults();
+      
       const enhancedWarning = document.getElementById('availability-warning-enhanced');
       if (enhancedWarning) enhancedWarning.classList.add('hidden');
       await this.loadReservations();
