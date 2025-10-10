@@ -48,7 +48,8 @@ if (ev && lt) {
     });
 }
   
-document.getElementsByName('nom').focus();
+const nomInput = document.getElementsByName('nom')[0];
+if (nomInput) nomInput.focus();
 }
   setupFormValidation() {
     const cinInput = this.form.querySelector('input[name="cin"]');
