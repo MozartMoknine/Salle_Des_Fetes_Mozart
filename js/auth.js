@@ -177,7 +177,7 @@ console.log('Attaching logout listener...');
     const intendedPage = sessionStorage.getItem('intendedPage');
     const currentPage = window.location.pathname.split('/').pop();
 
-    if (currentPage === 'login.html') {
+    if (currentPage === 'login.html' || currentPage === 'login') {
       const target = intendedPage || 'agenda.html';
       sessionStorage.removeItem('intendedPage');
       window.location.href = target;
