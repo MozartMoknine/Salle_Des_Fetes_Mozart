@@ -69,11 +69,29 @@ console.log('Attaching logout listener...');
 }
 
 
-    async init() {
+     async init() {
         // Check if user is already logged in
         const { data: { session } } = await this.supabase.auth.getSession();
-      console.log('Session récupérée:', session);
+        console.log('Session récupérée:', session);
+
         if (session) {
+            // Check if session is older than 24 hours
+            const loginTime = localStorage.getItem('loginTime');
+            const now = Date.now();
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+
+            if (loginTime && (now - parseInt(loginTime)) > twentyFourHours) {
+                console.log('Session expired after 24 hours, logging out...');
+                await this.signOut();
+                this.currentUser = null;
+                localStorage.clear();
+                sessionStorage.clear();
+                if (this.isProtectedPage()) {
+                    window.location.href = 'login.html';
+                }
+                return;
+            }
+
             this.currentUser = session.user;
             this.onAuthStateChange(session.user);
         }
@@ -82,14 +100,37 @@ console.log('Attaching logout listener...');
         this.supabase.auth.onAuthStateChange((event, session) => {
             if (event === 'SIGNED_IN') {
                 this.currentUser = session.user;
+                // Store login time
+                localStorage.setItem('loginTime', Date.now().toString());
                 this.onAuthStateChange(session.user);
             } else if (event === 'SIGNED_OUT') {
                 this.currentUser = null;
+                localStorage.removeItem('loginTime');
                 this.onAuthStateChange(null);
             }
         });
-    }
 
+        // Check session expiry every minute
+        this.sessionCheckInterval = setInterval(async () => {
+            const loginTime = localStorage.getItem('loginTime');
+            if (loginTime) {
+                const now = Date.now();
+                const twentyFourHours = 24 * 60 * 60 * 1000;
+
+                if ((now - parseInt(loginTime)) > twentyFourHours) {
+                    console.log('Session expired after 24 hours, logging out...');
+                    clearInterval(this.sessionCheckInterval);
+                    await this.signOut();
+                    this.currentUser = null;
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    if (this.isProtectedPage()) {
+                        window.location.href = 'login.html';
+                    }
+                }
+            }
+        }, 60000); // Check every minute
+    }
     async signIn(email, password) {
         try {
             const { data, error } = await this.supabase.auth.signInWithPassword({
