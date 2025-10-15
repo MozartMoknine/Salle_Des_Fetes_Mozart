@@ -13,8 +13,8 @@ class PushNotificationManager {
     }
 
     try {
-      this.registration = await navigator.serviceWorker.register('sw.js', {
-  scope: './'
+      this.registration = await navigator.serviceWorker.register('/sw.js', {
+  scope: '/'
 
       });
       console.log('Service Worker registered:', this.registration);
