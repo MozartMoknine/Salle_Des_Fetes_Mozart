@@ -2,12 +2,13 @@
   "name": "Salle des Fêtes Mozart",
   "short_name": "Mozart",
   "description": "Gestion et réservation de la Salle des Fêtes Mozart",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#FFD700",
   "orientation": "portrait-primary",
+  "gcm_sender_id": "103953800507",
   "icons": [
     {
       "src": "icons/icon-72x72.png",
