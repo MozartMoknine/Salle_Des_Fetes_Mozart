@@ -534,7 +534,11 @@
 }
 </style>
 
-
+ <script type="module">
+        import PushNotificationManager from './js/push-notifications.js';
+        window.pushManager = new PushNotificationManager();
+    </script>
+    <script src="js/push-ui.js"></script>
 
 </body>
 </html>
