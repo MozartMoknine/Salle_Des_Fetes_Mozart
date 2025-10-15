@@ -1,7 +1,7 @@
 class PushNotificationManager {
   constructor() {
-    this.supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    this.supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    this.supabaseUrl = 'https://qyskiegopptbugbbxbtp.supabase.co';
+    this.supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5c2tpZWdvcHB0YnVnYmJ4YnRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NTM4MDYsImV4cCI6MjA3MzAyOTgwNn0.HbAJ3nJIeJShOv3huwkWZuUeKadVQfnXX_ow0zoKEeg';
     this.vapidPublicKey = null;
     this.registration = null;
   }
