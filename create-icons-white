@@ -1,0 +1,31 @@
+const fs = require('fs');
+const { createCanvas } = require('canvas');
+
+const sizes = [72, 96, 120, 128, 144, 152, 180, 192, 384, 512];
+
+sizes.forEach(size => {
+  const canvas = createCanvas(size, size);
+  const ctx = canvas.getContext('2d');
+
+  // Transparent background (default, no fillRect)
+
+  // White circle
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size * 0.35, 0, Math.PI * 2);
+  ctx.fill();
+
+  // White music note
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = `bold ${size * 0.5}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('♪', size / 2, size / 2);
+
+  // Save as PNG
+  const buffer = canvas.toBuffer('image/png');
+  fs.writeFileSync(`public/icons/w-icon-${size}x${size}.png`, buffer);
+  console.log(`Generated icon-${size}x${size}.png`);
+});
+
+console.log('All white-on-transparent icons generated successfully!');
