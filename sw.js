@@ -60,21 +60,25 @@ self.addEventListener('push', (event) => {
   );
 });
 
-self.addEventListener('notificationclick', (event) => {
-  console.log('Notification clicked:', event);
+self.addEventListener('notificationclick', event => {
   event.notification.close();
 
-  if (event.action === 'view' || !event.action) {
-    event.waitUntil(
-      clients.matchAll({ type: 'window', includeUncontrolled: true })
-        .then((clientList) => {
-          if (clientList.length > 0) {
-            return clientList[0].focus();
-          }
-          return clients.openWindow('/calendar.html');
-        })
-    );
-  }
+  const targetUrl = event.notification.data?.url || '/Salle_Des_Fetes_Mozart/agenda.html';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
+      for (const client of windowClients) {
+        // Normalize both URLs to ensure match
+        const clientUrl = new URL(client.url);
+        const expectedUrl = new URL(targetUrl, self.location.origin);
+
+        if (clientUrl.pathname === expectedUrl.pathname && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      return clients.openWindow(targetUrl);
+    })
+  );
 });
 
 self.addEventListener('notificationclose', (event) => {
