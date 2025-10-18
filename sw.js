@@ -29,7 +29,7 @@ self.addEventListener('push', (event) => {
         ...payload,
         icon: payload.icon || notificationData.icon,
         badge: payload.badge || notificationData.badge,
-        tag: payload.tag || reservation-${payload.data?.reservationId} || 'reservation-default',
+        tag: payload.tag || `reservation-${payload.data?.reservationId}` || 'reservation-default',
         data: payload.data || {}
       };
     } catch (e) {
@@ -47,14 +47,8 @@ self.addEventListener('push', (event) => {
       data: notificationData.data,
       vibrate: [200, 100, 200],
       actions: [
-        {
-          action: 'view',
-          title: 'Voir'
-        },
-        {
-          action: 'close',
-          title: 'Fermer'
-        }
+        { action: 'view', title: 'Voir' },
+        { action: 'close', title: 'Fermer' }
       ]
     })
   );
