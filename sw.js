@@ -17,7 +17,6 @@ self.addEventListener('push', (event) => {
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-72x72.png',
     image: '/icons/icon-192x192.png',
-    tag: payload.tag || `reservation-${payload.data?.reservationId}` || notificationData.tag,
     requireInteraction: true,
     data: {}
   };
@@ -30,7 +29,7 @@ self.addEventListener('push', (event) => {
         ...payload,
         icon: payload.icon || notificationData.icon,
         badge: payload.badge || notificationData.badge,
-        tag: payload.tag || notificationData.tag,
+        tag: payload.tag || reservation-${payload.data?.reservationId} || 'reservation-default',
         data: payload.data || {}
       };
     } catch (e) {
