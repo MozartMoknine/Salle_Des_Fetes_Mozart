@@ -17,6 +17,7 @@ self.addEventListener('push', (event) => {
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-72x72.png',
     image: '/icons/icon-192x192.png',
+    renotify: true,
     requireInteraction: true,
     data: {}
   };
@@ -30,6 +31,7 @@ self.addEventListener('push', (event) => {
         icon: payload.icon || notificationData.icon,
         badge: payload.badge || notificationData.badge,
         tag: payload.tag || `reservation-${payload.data?.reservationId}` || 'reservation-default',
+       renotify: true,
         data: payload.data || {}
       };
     } catch (e) {
