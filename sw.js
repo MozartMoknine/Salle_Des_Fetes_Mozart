@@ -12,11 +12,12 @@ self.addEventListener('push', (event) => {
   console.log('Push notification received:', event);
 
   let notificationData = {
-    title: 'Salle des Fêtes Mozart',
+    title: 'Salle Des Fêtes Mozart',
     body: 'Nouvelle notification',
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-72x72.png',
-    tag: 'reservation-notification',
+    image: '/icons/icon-192x192.png',
+    tag: payload.tag || `reservation-${payload.data?.reservationId}` || notificationData.tag,
     requireInteraction: true,
     data: {}
   };
