@@ -26,7 +26,7 @@ class AgendaManager {
     
     }
 
-function loadAndInjectSVG() {
+loadAndInjectSVG() {
   const response = await fetch('/public/contrat-web.svg');
   const svgText = await response.text();
 
