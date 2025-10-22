@@ -1122,7 +1122,7 @@ this.populateEditForm(reservation);
     }
 
     showDetailsModal(reservationId) {
-     this.setupPrintModal();
+     
         const reservation = this.reservations.find(r => r.reservation_id === reservationId);
         if (!reservation) return;
         
@@ -1210,7 +1210,7 @@ this.populateEditForm(reservation);
                             <i class="fas fa-edit mr-2"></i>
                             Modifier
                         </button>
-                        <button onclick="agendaManager.printContract('${reservation.reservation_id}')"
+                        <button onclick="agendaManager.setupPrintModal()"
                                 class="bg-gold text-black px-6 py-3 rounded-lg font-semibold hover:bg-darkgold transition-colors inline-flex items-center justify-center">
                             <i class="fas fa-print mr-2"></i>
                             Imprimer Contrat
