@@ -23,12 +23,49 @@ class AgendaManager {
         this.setupEventListeners();
         await this.loadReservations();
         this.setupAvailabilityCalendar();
-    
+       this.setupPrintModal();
     }
 
- 
+ //new print
+ setupPrintModal() {
+  const openBtn = document.getElementById('open-print-modal');
+  const modal = document.getElementById('print-modal');
+  const container = document.getElementById('svg-container');
+  const closeBtn = document.getElementById('close-print-modal');
+  const printBtn = document.getElementById('trigger-print');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', async () => {
+      container.innerHTML = '';
+      const response = await fetch('/path/to/your-contract.svg');
+      const svgText = await response.text();
+      container.innerHTML = svgText;
+
+      await new Promise(resolve => setTimeout(resolve, 50));
+      if (typeof populateContractSVG === 'function') {
+        populateContractSVG(container.querySelector('svg'));
+      }
+
+      modal.classList.remove('hidden');
+    });
+  }
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+  }
+
+  if (printBtn) {
+    printBtn.addEventListener('click', () => {
+      window.print();
+    });
+  }
+}
+
 
     setupEventListeners() {
+     
         // Search functionality
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
