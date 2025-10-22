@@ -37,7 +37,7 @@ class AgendaManager {
   if (openBtn) {
     openBtn.addEventListener('click', async () => {
       container.innerHTML = '';
-      const response = await fetch('/path/to/your-contract.svg');
+      const response = await fetch('./public/contrat-web.svg');
       const svgText = await response.text();
       container.innerHTML = svgText;
 
