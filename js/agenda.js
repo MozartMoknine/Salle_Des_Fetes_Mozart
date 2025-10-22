@@ -26,42 +26,7 @@ class AgendaManager {
       
     }
 
- //new print
- setupPrintModal() {
-  const openBtn = document.getElementById('open-print-modal');
-  const modal = document.getElementById('print-modal');
-  const container = document.getElementById('svg-container');
-  const closeBtn = document.getElementById('close-print-modal');
-  const printBtn = document.getElementById('trigger-print');
 
-  if (openBtn) {
-    openBtn.addEventListener('click', async () => {
-      container.innerHTML = '';
-      const response = await fetch('./public/contrat-web.svg');
-      const svgText = await response.text();
-      container.innerHTML = svgText;
-
-      await new Promise(resolve => setTimeout(resolve, 50));
-      if (typeof populateContractSVG === 'function') {
-        populateContractSVG(container.querySelector('svg'));
-      }
-
-      modal.classList.remove('hidden');
-    });
-  }
-
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      modal.classList.add('hidden');
-    });
-  }
-
-  if (printBtn) {
-    printBtn.addEventListener('click', () => {
-      window.print();
-    });
-  }
-}
 
 
     setupEventListeners() {
@@ -1210,7 +1175,7 @@ this.populateEditForm(reservation);
                             <i class="fas fa-edit mr-2"></i>
                             Modifier
                         </button>
-                        <button onclick="agendaManager.setupPrintModal()"
+                        <button onclick="agendaManager.printContract('${reservation.reservation_id}')"
                                 class="bg-gold text-black px-6 py-3 rounded-lg font-semibold hover:bg-darkgold transition-colors inline-flex items-center justify-center">
                             <i class="fas fa-print mr-2"></i>
                             Imprimer Contrat
