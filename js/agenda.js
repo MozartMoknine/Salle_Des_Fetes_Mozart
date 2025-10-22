@@ -26,16 +26,6 @@ class AgendaManager {
     
     }
 
-async loadAndInjectSVG() {
-  const response = await fetch('./public/contrat-web.svg');
-  const svgText = await response.text();
-
-  const container = document.createElement('div');
-  container.id = 'print-area';
-  container.innerHTML = svgText;
-  document.body.appendChild(container);
-}
- 
  
 
     setupEventListeners() {
@@ -1688,7 +1678,6 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
   d.close();
   f.onload = ()=> {
     f.contentWindow.focus();
-   this.loadAndInjectSVG();
     f.contentWindow.print();
     document.body.removeChild(f);
   };
