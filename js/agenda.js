@@ -23,7 +23,7 @@ class AgendaManager {
         this.setupEventListeners();
         await this.loadReservations();
         this.setupAvailabilityCalendar();
-       this.setupPrintModal();
+      
     }
 
  //new print
@@ -1122,6 +1122,7 @@ this.populateEditForm(reservation);
     }
 
     showDetailsModal(reservationId) {
+     this.setupPrintModal();
         const reservation = this.reservations.find(r => r.reservation_id === reservationId);
         if (!reservation) return;
         
