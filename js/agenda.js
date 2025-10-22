@@ -1668,7 +1668,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
 
 
  
-   async triggerContractPrint(printContainer) {
+    triggerContractPrint(printContainer) {
         const f=document.createElement('iframe');
   f.style.position='absolute'; f.style.left='-9999px';
   document.body.appendChild(f);
@@ -1688,7 +1688,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
   d.close();
   f.onload = ()=> {
     f.contentWindow.focus();
-   await this.loadAndInjectSVG();
+   this.loadAndInjectSVG();
     f.contentWindow.print();
     document.body.removeChild(f);
   };
