@@ -1686,8 +1686,8 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
   d.close();
   f.onload = ()=> {
     f.contentWindow.focus();
-   preparePrintContent();
-cloneSVGForPrint();
+   this.preparePrintContent();
+   this.cloneSVGForPrint();
     f.contentWindow.print();
     document.body.removeChild(f);
   };
