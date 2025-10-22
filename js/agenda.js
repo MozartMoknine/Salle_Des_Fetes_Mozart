@@ -23,6 +23,7 @@ class AgendaManager {
         this.setupEventListeners();
         await this.loadReservations();
         this.setupAvailabilityCalendar();
+     await this.loadAndInjectSVG();
     }
 
 async function loadAndInjectSVG() {
