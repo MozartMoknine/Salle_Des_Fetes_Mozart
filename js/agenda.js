@@ -25,6 +25,18 @@ class AgendaManager {
         this.setupAvailabilityCalendar();
     }
 
+async function loadAndInjectSVG() {
+  const response = await fetch('/public/contrat-web.svg');
+  const svgText = await response.text();
+
+  const container = document.createElement('div');
+  container.id = 'print-area';
+  container.innerHTML = svgText;
+  document.body.appendChild(container);
+}
+ 
+ 
+
     setupEventListeners() {
         // Search functionality
         const searchInput = document.getElementById('search-input');
@@ -1651,18 +1663,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
         setSVGText('reste', ` ${reste} DT`);
     }
 
- //new print
- function preparePrintContent() {
-  const svgContainer = document.getElementById('svg-container');
-  svgContainer.classList.remove('hidden'); // Make sure it's visible
-  svgContainer.style.display = 'block';    // Force display
-}
- function cloneSVGForPrint() {
-  const svg = document.querySelector('svg');
-  const printArea = document.getElementById('print-area');
-  printArea.innerHTML = '';
-  printArea.appendChild(svg.cloneNode(true));
-}
+
 
 
  
@@ -1686,8 +1687,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
   d.close();
   f.onload = ()=> {
     f.contentWindow.focus();
-   this.preparePrintContent();
-   this.cloneSVGForPrint();
+   await this.loadAndInjectSVG();
     f.contentWindow.print();
     document.body.removeChild(f);
   };
