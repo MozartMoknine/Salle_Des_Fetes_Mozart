@@ -1651,6 +1651,21 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
         setSVGText('reste', ` ${reste} DT`);
     }
 
+ //new print
+ function preparePrintContent() {
+  const svgContainer = document.getElementById('svg-container');
+  svgContainer.classList.remove('hidden'); // Make sure it's visible
+  svgContainer.style.display = 'block';    // Force display
+}
+ function cloneSVGForPrint() {
+  const svg = document.querySelector('svg');
+  const printArea = document.getElementById('print-area');
+  printArea.innerHTML = '';
+  printArea.appendChild(svg.cloneNode(true));
+}
+
+
+ 
     triggerContractPrint(printContainer) {
         const f=document.createElement('iframe');
   f.style.position='absolute'; f.style.left='-9999px';
@@ -1671,6 +1686,8 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
   d.close();
   f.onload = ()=> {
     f.contentWindow.focus();
+   preparePrintContent();
+cloneSVGForPrint();
     f.contentWindow.print();
     document.body.removeChild(f);
   };
