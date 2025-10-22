@@ -23,10 +23,10 @@ class AgendaManager {
         this.setupEventListeners();
         await this.loadReservations();
         this.setupAvailabilityCalendar();
-     await this.loadAndInjectSVG();
+    
     }
 
-async function loadAndInjectSVG() {
+function loadAndInjectSVG() {
   const response = await fetch('/public/contrat-web.svg');
   const svgText = await response.text();
 
@@ -1688,7 +1688,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
   d.close();
   f.onload = ()=> {
     f.contentWindow.focus();
-   await this.loadAndInjectSVG();
+   this.loadAndInjectSVG();
     f.contentWindow.print();
     document.body.removeChild(f);
   };
