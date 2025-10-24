@@ -1728,7 +1728,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
     printWindow.focus();
     printWindow.print();
     printWindow.close();
-  }, 500); // give time to render
+  }, 5500); // give time to render
 };
 
 
