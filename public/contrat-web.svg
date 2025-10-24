@@ -8500,8 +8500,8 @@
 ............</text>
 <text id="tel1" transform="matrix(1 0 0 1 221.1937 345.8732)" class="st49 st50">
 ............</text>
-<DIV id="tel2" transform="matrix(1 0 0 1 299.7329 345.8732)" class="st49 st50">
-............</DIV>
+<text id="tel2" transform="matrix(1 0 0 1 299.7329 345.8732)" class="st49 st50">
+............</text
 <div id="x" transform="matrix(1 0 0 1 297.7329 345.8732)" class="st49 st50">
 -</div> <!-- <text id="tel2sep" x="293" y="345" font-size="14" fill="black">/</text> -->
 <text id="reste" transform="matrix(1 0 0 1 506.6357 558.1338)"  class="st49 st50">
