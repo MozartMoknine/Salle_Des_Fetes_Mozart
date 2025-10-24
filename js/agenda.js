@@ -1731,7 +1731,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
   }, 5500); // give time to render
 };
 
-
+    }
     setupPrintPreviewModal() {
         const closePreview = document.getElementById('close-preview-agenda');
         const cancelPrint = document.getElementById('cancel-print-preview-agenda');
