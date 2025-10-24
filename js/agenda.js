@@ -23,7 +23,7 @@ class AgendaManager {
         this.setupEventListeners();
         await this.loadReservations();
         this.setupAvailabilityCalendar();
-      
+        this.setupPrintPreviewModal();
     }
 
 
@@ -1560,27 +1560,46 @@ this.populateEditForm(reservation);
         printContainer.style.position = 'absolute';
         printContainer.style.left = '-9999px';
         printContainer.innerHTML = `
-           <svg id="contract-svg" width="100%" height="600" viewBox="0 0 400 600" class="bg-white rounded">
+           <svg id="contract-svg-temp" width="100%" height="600" viewBox="0 0 400 600" class="bg-white rounded">
                         <!-- Contract SVG content will be generated here -->
                     </svg>
         `;
         document.body.appendChild(printContainer);
 
-        const tempSvg = document.getElementById('contract-svg');
-        
+        const tempSvg = document.getElementById('contract-svg-temp');
+
         // Load SVG template
         await this.loadContractSVG(tempSvg);
-        
+
         // Populate SVG with reservation data
         this.populateContractSVG(tempSvg, reservation);
-        
-        // Print the contract
-        this.triggerContractPrint(document.getElementById('PRINT'));
-        
+
+        // Show preview modal
+        this.showPrintPreview(tempSvg);
+
         // Clean up
         setTimeout(() => {
             document.body.removeChild(printContainer);
         }, 1000);
+    }
+
+    showPrintPreview(svgElement) {
+        const previewModal = document.getElementById('print-preview-modal');
+        const previewContent = document.getElementById('print-preview-content');
+
+        if (previewModal && previewContent && svgElement) {
+            previewContent.innerHTML = svgElement.outerHTML;
+
+            const previewSvg = previewContent.querySelector('svg');
+            if (previewSvg) {
+                previewSvg.setAttribute('width', '100%');
+                previewSvg.setAttribute('height', 'auto');
+                previewSvg.style.maxWidth = '600px';
+                previewSvg.id = 'preview-svg-display';
+            }
+
+            previewModal.classList.remove('hidden');
+        }
     }
 
     async loadContractSVG(svgElement) {
@@ -1661,29 +1680,70 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
 
 
  
-    triggerContractPrint(printContainer) {
-        const f=document.createElement('iframe');
-  f.style.position='absolute'; f.style.left='-9999px';
-  document.body.appendChild(f);
-  const d=f.contentWindow.document;
-  d.open();
-  d.write(`
-    <html> 
-      <head><style>
-        @media print {
-          body{margin:0;padding:0;}
-          #PRINT, svg{width:100%;height:auto;}
+    triggerContractPrint() {
+        const previewSvg = document.getElementById('PRINT');
+        if (!previewSvg) {
+            console.error('Preview SVG not found');
+            return;
         }
-      </style></head>
-      <body>${printContainer.outerHTML}</body>
-    </html>
-  `);
-  d.close();
-  f.onload = ()=> {
-    f.contentWindow.focus();
-    f.contentWindow.print();
-    document.body.removeChild(f);
-  };
+
+        const f = document.createElement('iframe');
+        f.style.position = 'absolute';
+        f.style.left = '-9999px';
+        document.body.appendChild(f);
+        const d = f.contentWindow.document;
+        d.open();
+        d.write(`
+            <html>
+                <head>
+                    <style>
+                        @media print {
+                            body { margin: 0; padding: 0; }
+                            svg { width: 100%; height: auto; }
+                        }
+                        @page {
+                            size: A4;
+                            margin: 1cm;
+                        }
+                    </style>
+                </head>
+                <body>${previewSvg.outerHTML}</body>
+            </html>
+        `);
+        d.close();
+        f.onload = () => {
+            f.contentWindow.focus();
+            f.contentWindow.print();
+            setTimeout(() => {
+                if (f.parentNode) document.body.removeChild(f);
+            }, 100);
+        };
+    }
+
+    setupPrintPreviewModal() {
+        const closePreview = document.getElementById('close-preview-agenda');
+        const cancelPrint = document.getElementById('cancel-print-preview-agenda');
+        const confirmPrint = document.getElementById('confirm-print-preview-agenda');
+        const modal = document.getElementById('print-preview-modal');
+
+        if (closePreview) {
+            closePreview.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
+
+        if (cancelPrint) {
+            cancelPrint.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
+
+        if (confirmPrint) {
+            confirmPrint.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                this.triggerContractPrint();
+            });
+        }
     }
 
   downloadExcel() {
