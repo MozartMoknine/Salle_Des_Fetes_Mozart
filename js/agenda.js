@@ -1593,7 +1593,9 @@ this.populateEditForm(reservation);
             const previewSvg = previewContent.querySelector('svg');
             if (previewSvg) {
                 previewSvg.setAttribute('width', '100%');
-                previewSvg.setAttribute('height', 'auto');
+               // previewSvg.setAttribute('height', 'auto');
+             previewSvg.style.height = 'auto';
+
                 previewSvg.style.maxWidth = '600px';
                 previewSvg.id = 'preview-svg-display';
             }
