@@ -1686,6 +1686,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
             console.error('Preview SVG not found');
             return;
         }
+       const clone = previewSvg.cloneNode(true); // clone the SVG only
 
         const f = document.createElement('iframe');
         f.style.position = 'absolute';
@@ -1707,7 +1708,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
                         }
                     </style>
                 </head>
-                <body>${previewSvg.outerHTML}</body>
+                <body>${clone.outerHTML}</body>
             </html>
         `);
         d.close();
