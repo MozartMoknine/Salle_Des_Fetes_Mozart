@@ -1724,11 +1724,13 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
 
   // Wait for content to load before printing
   printWindow.onload = () => {
+  setTimeout(() => {
     printWindow.focus();
     printWindow.print();
     printWindow.close();
-  };
-}
+  }, 500); // give time to render
+};
+
 
     setupPrintPreviewModal() {
         const closePreview = document.getElementById('close-preview-agenda');
