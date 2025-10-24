@@ -531,10 +531,30 @@
   </div>
 </div>
 
-   
-
-
-
+<!-- Print Preview Modal -->
+<div id="print-preview-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden p-4">
+  <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+    <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center z-10">
+      <h2 class="text-2xl font-bold text-gray-800">Aperçu avant impression</h2>
+      <button id="close-preview-agenda" class="text-gray-500 hover:text-gray-700 text-2xl">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="p-6">
+      <div id="print-preview-content" class="border border-gray-300 rounded-lg bg-gray-50 p-4 flex justify-center">
+      </div>
+    </div>
+    <div class="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex justify-center gap-4">
+      <button id="confirm-print-preview-agenda" class="bg-gold text-black px-6 py-3 rounded-lg font-semibold hover:bg-darkgold transition-colors flex items-center gap-2">
+        <i class="fas fa-print"></i>
+        Imprimer
+      </button>
+      <button id="cancel-print-preview-agenda" class="bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors">
+        Annuler
+      </button>
+    </div>
+  </div>
+</div>
 
 <style>
 @keyframes fade-in {
