@@ -199,12 +199,12 @@ function createPushNotificationUI() {
   const statusText = document.getElementById('push-status-text');
 
   async function updatePushStatus() {
-    if (!window.pushManager) {
+    if (!window.customPushManager) {
       return;
     }
 
-    const isSubscribed = await window.pushManager.isSubscribed();
-    const permission = window.pushManager.getNotificationPermission();
+    const isSubscribed = await window.customPushManager.isSubscribed();
+    const permission = window.customPushManager.getNotificationPermission();
 
     if (isSubscribed) {
       statusIndicator.classList.remove('hidden');
@@ -234,14 +234,14 @@ function createPushNotificationUI() {
     enableBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Activation...';
 
     try {
-      if (!window.pushManager) {
+      if (!window.customPushManager) {
         throw new Error('Push manager not initialized');
       }
 
       const vapidPublicKey = 'BFJ4V6z0yS2YmxySa4wpbF5rUd1gg3cKGXfCNfT49eP116D9SugDazkfRMiDfDK0l-hmzvS8suFBwfPq490tfQE'; // Replace with your real VAPID public key
 
 
-      await window.pushManager.setupPushNotifications(vapidPublicKey);
+      await window.customPushManager.setupPushNotifications(vapidPublicKey);
 
       banner.classList.add('hidden');
       await updatePushStatus();
@@ -280,16 +280,16 @@ function createPushNotificationUI() {
   });
 
   statusIndicator.addEventListener('click', async () => {
-    if (!window.pushManager) {
+    if (!window.customPushManager) {
       return;
     }
 
-    const isSubscribed = await window.pushManager.isSubscribed();
-    const permission = window.pushManager.getNotificationPermission();
+    const isSubscribed = await window.customPushManager.isSubscribed();
+    const permission = window.customPushManager.getNotificationPermission();
 
     if (isSubscribed) {
       if (confirm('Voulez-vous désactiver les notifications?')) {
-        await window.pushManager.unsubscribe();
+        await window.customPushManager.unsubscribe();
         await updatePushStatus();
         localStorage.removeItem('push-banner-dismissed');
       }
@@ -303,7 +303,7 @@ function createPushNotificationUI() {
 
   updatePushStatus();
 
-  if (window.pushManager) {
+  if (window.customPushManager) {
     setInterval(updatePushStatus, 5000);
   }
 }
