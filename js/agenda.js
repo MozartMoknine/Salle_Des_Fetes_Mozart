@@ -1681,45 +1681,54 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
 
  
     triggerContractPrint() {
-        const previewSvg = document.getElementById('PRINT');
-        if (!previewSvg) {
-            console.error('Preview SVG not found');
-            return;
-        }
-       const clone = previewSvg.cloneNode(true); // clone the SVG only
+  const previewSvg = document.getElementById('PRINT');
+  if (!previewSvg) {
+    console.error('Preview SVG not found');
+    return;
+  }
 
-        const f = document.createElement('iframe');
-        f.style.position = 'absolute';
-        f.style.left = '-9999px';
-        document.body.appendChild(f);
-        const d = f.contentWindow.document;
-        d.open();
-        d.write(`
-            <html>
-                <head>
-                    <style>
-                        @media print {
-                            body { margin: 0; padding: 0; }
-                            svg { width: 100%; height: auto; }
-                        }
-                        @page {
-                            size: A4;
-                            margin: 1cm;
-                        }
-                    </style>
-                </head>
-                <body>${clone.outerHTML}</body>
-            </html>
-        `);
-        d.close();
-        f.onload = () => {
-            f.contentWindow.focus();
-            f.contentWindow.print();
-            setTimeout(() => {
-                if (f.parentNode) document.body.removeChild(f);
-            }, 100);
-        };
-    }
+  const svgContent = previewSvg.outerHTML;
+  const printWindow = window.open('', '_blank');
+
+  if (!printWindow) {
+    alert('Impossible d’ouvrir la fenêtre d’impression.');
+    return;
+  }
+
+  printWindow.document.open();
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>Contrat de Réservation</title>
+        <style>
+          @media print {
+            body { margin: 0; padding: 0; }
+            svg { width: 100%; height: auto; }
+          }
+          @page {
+            size: A4;
+            margin: 1cm;
+          }
+          body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+          }
+        </style>
+      </head>
+      <body>${svgContent}</body>
+    </html>
+  `);
+  printWindow.document.close();
+
+  // Wait for content to load before printing
+  printWindow.onload = () => {
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+  };
+}
 
     setupPrintPreviewModal() {
         const closePreview = document.getElementById('close-preview-agenda');
