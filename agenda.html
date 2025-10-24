@@ -566,10 +566,10 @@
 }
 </style>
 
- <script type="module">
-        import PushNotificationManager from './js/push-notifications.js';
-        window.pushManager = new PushNotificationManager();
-    </script>
+<script type="module">
+  import PushNotificationManager from './js/push-notifications.js';
+  window.customPushManager = new PushNotificationManager(); // ✅ safe
+</script>
     <script src="js/push-ui.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
 <script>eruda.init();</script>
