@@ -309,19 +309,13 @@ setSVGText('tel2',   reservation.tel2  || '');
                     const iframeDoc = iframe.contentWindow.document;
                     iframeDoc.open();
                     iframeDoc.write(`
-                       <html>
-                <head>
-                    <style>
-                        @media print-area {
-                            body { margin: 0; padding: 0; }
-                            svg { width: 100%; height: auto; }
-                        }
-                        @page {
-                            size: A4;
-                            margin: 1cm;
-                        }
-                    </style>
-                </head>
+                                  <html>
+               <head><style>
+        @media print {
+          body{margin:0;padding:0;}
+          #PRINT-AREA, svg{width:100%;height:auto;}
+        }
+      </style></head>
                 <body>${printArea.outerHTML}</body>
             </html>
 
