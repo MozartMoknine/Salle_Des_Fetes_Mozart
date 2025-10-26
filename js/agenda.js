@@ -1683,7 +1683,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
 
  
    triggerContractPrint() {
-        const previewSvg = document.getElementById('PRINT');
+        const previewSvg = document.getElementById('PRINT-AREA');
         if (!previewSvg) {
             console.error('Preview SVG not found');
             return;
