@@ -1554,33 +1554,7 @@ this.populateEditForm(reservation);
         const reservation = this.reservations.find(r => r.reservation_id === reservationId);
         if (!reservation) return;
 
-        // Create a temporary container for the SVG
-        const printContainer = document.createElement('div');
-        printContainer.id = 'temp-print-container';
-        printContainer.style.position = 'absolute';
-        printContainer.style.left = '-9999px';
-        printContainer.innerHTML = `
-           <svg id="contract-svg-temp" width="100%" height="600" viewBox="0 0 400 600" class="bg-white rounded">
-                        <!-- Contract SVG content will be generated here -->
-                    </svg>
-        `;
-        document.body.appendChild(printContainer);
-
-        const tempSvg = document.getElementById('contract-svg-temp');
-
-        // Load SVG template
-        await this.loadContractSVG(tempSvg);
-
-        // Populate SVG with reservation data
-        this.populateContractSVG(tempSvg, reservation);
-
-        // Show preview modal
-        this.showPrintPreview(tempSvg);
-
-        // Clean up
-        setTimeout(() => {
-            document.body.removeChild(printContainer);
-        }, 1000);
+        window.open(`contract-preview.html?id=${reservationId}`, '_blank');
     }
 
     showPrintPreview(svgElement) {
