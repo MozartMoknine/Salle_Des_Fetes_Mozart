@@ -395,7 +395,7 @@ this.dateInput.addEventListener('change', () => {
   // Optional: add disabled styling
   this.printBtn.classList.add('opacity-50', 'cursor-not-allowed');
 this.submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-      // document.getElementById('PRINT').disabled=true;
+      // document.getElementById('PRINT-AREA').disabled=true;
     } else {
       // Hide enhanced warning
       const enhancedWarning = document.getElementById('availability-warning-enhanced');
@@ -708,7 +708,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     await preview.handleSubmit();
 
     if(printAfterSave){
-      triggerPrint(document.getElementById('PRINT'));
+      triggerPrint(document.getElementById('PRINT-AREA'));
       printAfterSave=false;
     }
   });
@@ -730,7 +730,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       return;
     }
     if(preview.isSaved){
-      triggerPrint(document.getElementById('PRINT'));
+      triggerPrint(document.getElementById('PRINT-AREA'));
     } else {
       printAfterSave=true;
       preview.form.requestSubmit();
@@ -750,7 +750,7 @@ function triggerPrint(printArea){
       <head><style>
         @media print {
           body{margin:0;padding:0;}
-          #PRINT, svg{width:100%;height:auto;}
+          #PRINT-AREA, svg{width:100%;height:auto;}
         }
       </style></head>
       <body>${printArea.outerHTML}</body>
