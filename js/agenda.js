@@ -1562,7 +1562,7 @@ this.populateEditForm(reservation);
         this.populateContractSVG(tempSvg, reservation);
         
         // Print the contract
-        this.triggerContractPrint(document.getElementById('PRINT'));
+        this.triggerContractPrint(document.getElementById('PRINT-AREA'));
         
         // Clean up
         setTimeout(() => {
@@ -1655,7 +1655,7 @@ setSVGText('horaire', 'De 15h30 à 20h00' || '');
       <head><style>
         @media print {
           body{margin:0;padding:0;}
-          #PRINT, svg{width:100%;height:auto;}
+          #PRINT-AREA, svg{width:100%;height:auto;}
         }
       </style></head>
       <body>${printContainer.outerHTML}</body>
