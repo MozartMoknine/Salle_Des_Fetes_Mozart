@@ -292,55 +292,39 @@ setSVGText('tel2',   reservation.tel2  || '');
                 if (navigator.userAgent.match(/iPhone|iPad|iPod|Android/i)) {
                     this.printMobile();
                 } else {
-                    window.print();
+                    this.printMobile();
                 }
             }
 
             printMobile() {
-                try {
-                    window.print();
-                } catch (error) {
-                    console.error('Print error:', error);
-
-                    const printArea = document.getElementById('print-area');
+           
+                    const printArea = document.getElementById('PRINT-AREA');
                     if (!printArea) return;
 
                     const iframe = document.createElement('iframe');
                     iframe.style.position = 'absolute';
                     iframe.style.left = '-9999px';
-                    iframe.style.width = '100%';
-                    iframe.style.height = '100%';
                     document.body.appendChild(iframe);
 
                     const iframeDoc = iframe.contentWindow.document;
                     iframeDoc.open();
                     iframeDoc.write(`
-                        <html>
-                            <head>
-                                <title>Contrat Mozart</title>
-                                <style>
-                                    @page {
-                                        size: A4;
-                                        margin: 1cm;
-                                    }
-                                    body {
-                                        margin: 0;
-                                        padding: 0;
-                                        display: flex;
-                                        justify-content: center;
-                                        align-items: center;
-                                    }
-                                    svg {
-                                        width: 100%;
-                                        height: auto;
-                                        max-width: 800px;
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                ${printArea.innerHTML}
-                            </body>
-                        </html>
+                       <html>
+                <head>
+                    <style>
+                        @media print-area {
+                            body { margin: 0; padding: 0; }
+                            svg { width: 100%; height: auto; }
+                        }
+                        @page {
+                            size: A4;
+                            margin: 1cm;
+                        }
+                    </style>
+                </head>
+                <body>${printArea.outerHTML}</body>
+            </html>
+
                     `);
                     iframeDoc.close();
 
@@ -348,6 +332,7 @@ setSVGText('tel2',   reservation.tel2  || '');
                         try {
                             iframe.contentWindow.focus();
                             iframe.contentWindow.print();
+                          alert('success');
                         } catch (e) {
                             console.error('Print failed:', e);
                             alert('Impossible d\'imprimer. Veuillez utiliser le menu de votre navigateur.');
@@ -358,7 +343,7 @@ setSVGText('tel2',   reservation.tel2  || '');
                             }
                         }, 1000);
                     };
-                }
+
             }
         }
 
