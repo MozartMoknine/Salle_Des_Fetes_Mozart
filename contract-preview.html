@@ -25,338 +25,61 @@
     </script>
     <link rel="stylesheet" href="styles/main.css">
     <style>
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
         @media print {
+            * {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0 !important;
+                padding: 0 !important;
+                overflow: hidden;
+            }
+
             body * {
                 visibility: hidden;
             }
-            #print-area, #print-area * {
+
+            #PRINT-AREA, #PRINT-AREA * {
                 visibility: visible;
             }
-            #print-area {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
+
+            #PRINT-AREA {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
             }
+
+            #PRINT-AREA svg {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                max-width: none !important;
+                max-height: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                border-radius: 0 !important;
+                background: white !important;
+                box-shadow: none !important;
+            }
+
             .no-print {
                 display: none !important;
-            }
-            svg {
-                width: 100% !important;
-                height: auto !important;
-                max-width: none !important;
-            }
-        }
-
-        .contract-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        #contract-svg-display {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 0 auto;
-            background: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-        }
-
-        .print-button-container {
-            position: sticky;
-            top: 0;
-            background: white;
-            border-bottom: 2px solid #FFD700;
-            z-index: 50;
-            padding: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        @media (max-width: 640px) {
-            .contract-container {
-                padding: 0.5rem;
-            }
-        }
-    </style>
-</head>
-<body class="bg-gray-50">
-    <div id="loading-overlay" style="
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(255, 255, 255, 0.9);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 9999;">
-        <div style="
-            width: 48px;
-            height: 48px;
-            border: 6px solid #FFD700;
-            border-top: 6px solid #333;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;">
-        </div>
-        <p style="color: #444; font-size: 16px;">&nbsp;Chargement du contrat...</p>
-    </div>
-
-    <style>
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-
-    <div class="print-button-container no-print">
-        <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <i class="fas fa-music text-gold text-2xl"></i>
-                <h1 class="text-black text-xl font-bold">Aperçu Contrat</h1>
-            </div>
-            <div class="flex gap-2">
-                <button id="print-btn" class="bg-gold text-black px-4 py-2 md:px-6 md:py-3 rounded-lg font-semibold hover:bg-darkgold transition-colors flex items-center gap-2">
-                    <i class="fas fa-print"></i>
-                    <span class="hidden md:inline">Imprimer</span>
-                </button>
-                <button id="back-btn" class="bg-gray-600 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors flex items-center gap-2">
-                    <i class="fas fa-arrow-left"></i>
-                    <span class="hidden md:inline">Retour</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div class="contract-container py-8">
-        <div class="bg-white rounded-lg shadow-lg p-4 md:p-6">
-            <h2 class="text-2xl font-bold text-center mb-6 text-gray-800 no-print">Contrat de Réservation</h2>
-
-            <div id="print-area" class="flex justify-center">
-                <svg id="contract-svg-display" width="600" height="800" viewBox="0 0 400 600">
-                </svg>
-            </div>
-
-            <div class="mt-6 text-center text-sm text-gray-600 no-print">
-                <p><i class="fas fa-info-circle mr-2"></i>Appuyez sur le bouton "Imprimer" pour générer le PDF</p>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/auth.js"></script>
-
-    <script>
-        class ContractPreview {
-            constructor() {
-                this.supabaseUrl = 'https://qyskiegopptbugbbxbtp.supabase.co';
-                this.supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5c2tpZWdvcHB0YnVnYmJ4YnRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NTM4MDYsImV4cCI6MjA3MzAyOTgwNn0.HbAJ3nJIeJShOv3huwkWZuUeKadVQfnXX_ow0zoKEeg';
-                this.supabase = window.supabase.createClient(this.supabaseUrl, this.supabaseKey);
-                this.reservation = null;
-                this.init();
-            }
-
-            async init() {
-                const urlParams = new URLSearchParams(window.location.search);
-                const reservationId = urlParams.get('id');
-
-                if (!reservationId) {
-                    alert('ID de réservation manquant');
-                    window.history.back();
-                    return;
-                }
-
-                await this.loadReservation(reservationId);
-                this.setupEventListeners();
-            }
-
-            async loadReservation(reservationId) {
-                try {
-                    const { data, error } = await this.supabase
-                        .from('reservations')
-                        .select('*')
-                        .eq('reservation_id', reservationId)
-                        .single();
-
-                    if (error) throw error;
-
-                    this.reservation = data;
-                    await this.renderContract();
-
-                    const loader = document.getElementById('loading-overlay');
-                    if (loader) loader.style.display = 'none';
-
-                } catch (error) {
-                    console.error('Error loading reservation:', error);
-                    alert('Erreur lors du chargement de la réservation');
-                    window.history.back();
-                }
-            }
-
-            async renderContract() {
-                const svgElement = document.getElementById('contract-svg-display');
-                if (!svgElement || !this.reservation) return;
-
-                await this.loadContractSVG(svgElement);
-                this.populateContractSVG(svgElement, this.reservation);
-            }
-
-            async loadContractSVG(svgElement) {
-                const paths = [
-                   '/contrat-web.svg',
-            './contrat-web.svg',
-            '/public/contrat-web.svg',
-            './public/contrat-web.svg'
-                ];
-
-                for (const path of paths) {
-                    try {
-                        const response = await fetch(path);
-                        if (response.ok) {
-                            svgElement.innerHTML = await response.text();
-                            return;
-                        }
-                    } catch (error) {
-                        console.log(`Failed to load SVG from ${path}`);
-                    }
-                }
-
-                svgElement.innerHTML = `
-                    <rect width="400" height="600" fill="white" stroke="#333" stroke-width="2"/>
-                    <text id="nom" x="120" y="120" font-size="16" fill="gold"></text>
-                    <text id="prenom" x="200" y="120" font-size="16" fill="gold"></text>
-                    <text id="cin" x="50" y="160" font-size="14" fill="#333"></text>
-                    <text id="tel1" x="50" y="180" font-size="14" fill="#333"></text>
-                    <text id="tel2" x="50" y="200" font-size="14" fill="#333"></text>
-                    <text id="date" x="50" y="240" font-size="14" fill="#333"></text>
-                    <text id="horaire" x="50" y="260" font-size="14" fill="#333"></text>
-                    <text id="total" x="60" y="350" font-size="14" fill="#333"></text>
-                    <text id="avance" x="60" y="370" font-size="14" fill="#333"></text>
-                    <text id="reste" x="60" y="395" font-size="14" fill="red"></text>
-                `;
-            }
-
-            _fmtDate(s) {
-                return new Date(s).toLocaleDateString('fr-FR');
-            }
-
-            populateContractSVG(svgElement, reservation) {
-                const setSVGText = (id, text) => {
-                    const element = svgElement.querySelector(`#${id}`);
-                    if (element) element.textContent = text;
-                };
-
-                const formattedCIN = String(reservation.cin).padStart(8, '0');
-
-                setSVGText('nom', reservation.nom || '');
-                setSVGText('prenom', reservation.prenom || '');
-                setSVGText('cin', formattedCIN || '');
-                setSVGText('tel1', reservation.tel1 || '');
-
-setSVGText('tel2',   reservation.tel2  || '');
-    if(reservation.tel2!=null){
-      setSVGText('tel2',   `/ ${reservation.tel2}`  || '');
-    }
-              
-
-                if (reservation.horaire === 'nuit') {
-                    setSVGText('horaire', 'De 20h30 à 1h00' || '');
-                } else if (reservation.horaire === 'apres-midi') {
-                    setSVGText('horaire', 'De 15h30 à 20h00' || '');
-                }
-
-                setSVGText('date', reservation.date_res ? this._fmtDate(reservation.date_res) : '');
-
-                const montant = reservation.montant_tot || 0;
-                const avance = reservation.avance || 0;
-                const reste = reservation.montant_rest || 0;
-
-                setSVGText('total', ` ${montant} DT`);
-                setSVGText('avance', ` ${avance} DT`);
-                setSVGText('reste', ` ${reste} DT`);
-            }
-
-            setupEventListeners() {
-                const printBtn = document.getElementById('print-btn');
-                const backBtn = document.getElementById('back-btn');
-
-                if (printBtn) {
-                    printBtn.addEventListener('click', () => this.handlePrint());
-                }
-
-                if (backBtn) {
-                    backBtn.addEventListener('click', () => window.history.back());
-                }
-            }
-
-            handlePrint() {
-                if (navigator.userAgent.match(/iPhone|iPad|iPod|Android/i)) {
-                    this.printMobile();
-                } else {
-                    this.printMobile();
-                }
-            }
-
-            printMobile() {
-           
-                    const printArea = document.getElementById('PRINT-AREA');
-                    if (!printArea) return;
-
-                    const iframe = document.createElement('iframe');
-                    iframe.style.position = 'absolute';
-                    iframe.style.left = '-9999px';
-                    document.body.appendChild(iframe);
-
-                    const iframeDoc = iframe.contentWindow.document;
-                    iframeDoc.open();
-                    iframeDoc.write(`
-                                  <html>
-               <head><style>
-        @media print {
-          body{margin:0;padding:0;}
-          #PRINT-AREA, svg{width:100%;height:auto;}
-        }
-      </style></head>
-                <body>${printArea.outerHTML}</body>
-            </html>
-
-                    `);
-                    iframeDoc.close();
-
-                    iframe.onload = () => {
-                        try {
-                            iframe.contentWindow.focus();
-                            iframe.contentWindow.print();
-                          alert('success');
-                        } catch (e) {
-                            console.error('Print failed:', e);
-                            alert('Impossible d\'imprimer. Veuillez utiliser le menu de votre navigateur.');
-                        }
-                        setTimeout(() => {
-                            if (iframe.parentNode) {
-                                document.body.removeChild(iframe);
-                            }
-                        }, 1000);
-                    };
-
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const loader = document.getElementById('loading-overlay');
-            if (loader) loader.style.display = 'flex';
-
-            setTimeout(() => {
-                if (authManager && !authManager.requireAuth()) {
-                    return;
-                }
-
-                if (loader) loader.style.display = 'none';
-
-                new ContractPreview();
-            }, 800);
-        });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
-</body>
-</html>
+        
