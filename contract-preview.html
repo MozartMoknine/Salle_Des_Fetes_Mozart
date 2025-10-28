@@ -318,8 +318,15 @@ setSVGText('tel2',   reservation.tel2  || '');
                 }
 
                 if (backBtn) {
-                    backBtn.addEventListener('click', () => window.history.back());
+                  backBtn.addEventListener('click', () => {
+                    if (window.history.length > 1) {
+                      window.history.back();
+                    } else {
+                      window.location.href = 'agenda.html';
+                    }
+                  });
                 }
+
             }
 
             handlePrint() {
