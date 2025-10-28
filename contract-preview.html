@@ -340,8 +340,8 @@ setSVGText('tel2',   reservation.tel2  || '');
                 const iframe = document.createElement('iframe');
                 iframe.style.position = 'absolute';
                 iframe.style.left = '-9999px';
-                iframe.style.width = '100%';
-                iframe.style.height = '100%';
+               // iframe.style.width = '100%';
+               // iframe.style.height = '100%';
                 document.body.appendChild(iframe);
 
                 const iframeDoc = iframe.contentWindow.document;
@@ -359,34 +359,7 @@ setSVGText('tel2',   reservation.tel2  || '');
                                     size: A4;
                                     margin: 0;
                                 }
-                                * {
-                                    margin: 0 !important;
-                                    padding: 0 !important;
-                                    box-sizing: border-box;
-                                }
-                                html, body {
-                                    width: 100%;
-                                    height: 100%;
-                                    overflow: hidden;
-                                }
-                                #PRINT-AREA {
-                                    width: 100% !important;
-                                    height: 100% !important;
-                                    display: flex !important;
-                                    justify-content: center !important;
-                                    align-items: center !important;
-                                    border: none !important;
-                                    box-shadow: none !important;
-                                }
-                                svg {
-                                    width: 100% !important;
-                                    height: auto !important;
-                                    max-width: 100% !important;
-                                    border: none !important;
-                                    border-radius: 0 !important;
-                                    box-shadow: none !important;
-                                    background: white !important;
-                                }
+                               
                             </style>
                         </head>
                         <body>
