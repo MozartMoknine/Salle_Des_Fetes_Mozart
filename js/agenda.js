@@ -48,6 +48,44 @@ class AgendaManager {
         if (downloadBtn) {
             downloadBtn.addEventListener('click', () => this.downloadExcel());
         }
+
+
+     // Previous reservations button
+        const previousReservationsBtn = document.getElementById('previous-reservations-btn');
+        if (previousReservationsBtn) {
+            previousReservationsBtn.addEventListener('click', () => {
+                this.showPreviousReservationsModal();
+            });
+        }
+
+        // Previous reservations modal close
+        const closePreviousModal = document.getElementById('close-previous-modal');
+        if (closePreviousModal) {
+            closePreviousModal.addEventListener('click', () => {
+                this.hidePreviousReservationsModal();
+            });
+        }
+
+        // Previous reservations search
+        const previousSearch = document.getElementById('previous-search');
+        if (previousSearch) {
+            previousSearch.addEventListener('input', (e) => {
+                this.previousSearchTerm = e.target.value.toLowerCase();
+                this.previousCurrentPage = 1;
+                this.renderPreviousReservations();
+            });
+        }
+
+        // Previous reservation details
+        const closePreviousDetails = document.getElementById('close-previous-details');
+        if (closePreviousDetails) {
+            closePreviousDetails.addEventListener('click', () => {
+                document.getElementById('previous-details-modal').classList.add('hidden');
+            });
+        }
+        }
+
+     
         // pdf download button
         const downloadPDFBtn = document.getElementById('download-pdf-btn');
         if (downloadPDFBtn) {
