@@ -844,6 +844,374 @@ this.populateEditForm(reservation);
         }
     }
 
+
+
+ 
+    async loadPreviousReservations() {
+        try {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            const { data, error } = await this.supabase
+                .from('reservations')
+                .select(`
+                    reservation_id,
+                    nom,
+                    prenom,
+                    cin,
+                    tel1,
+                    tel2,
+                    date_res,
+                    horaire,
+                    montant_tot,
+                    avance,
+                    montant_rest,
+                    notes,
+                    date_creation,
+                    users!fk_reservations_created_by(username, nom)
+                `)
+                .lt('date_res', yesterdayStr)
+                .order('date_res', { ascending: false });
+
+            if (error) {
+                throw error;
+            }
+
+            this.previousReservations = data || [];
+            console.log('Loaded previous reservations:', this.previousReservations.length);
+
+        } catch (error) {
+            console.error('Error loading previous reservations:', error);
+            this.showError('Erreur lors du chargement des réservations précédentes');
+        }
+    }
+
+    async showPreviousReservationsModal() {
+        await this.loadPreviousReservations();
+        this.renderPreviousReservations();
+        
+        const modal = document.getElementById('previous-reservations-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.querySelector('.modal-content').classList.remove('scale-95', 'opacity-0');
+                modal.querySelector('.modal-content').classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+    }
+
+    hidePreviousReservationsModal() {
+        const modal = document.getElementById('previous-reservations-modal');
+        if (modal) {
+            modal.querySelector('.modal-content').classList.remove('scale-100', 'opacity-100');
+            modal.querySelector('.modal-content').classList.add('scale-95', 'opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+    }
+
+    renderPreviousReservations() {
+        const tableBody = document.getElementById('previous-reservations-table');
+        const countElement = document.getElementById('previous-count');
+        const paginationInfo = document.getElementById('previous-pagination-info');
+        const paginationControls = document.getElementById('previous-pagination-controls');
+        
+        if (!tableBody) return;
+
+        // Filter reservations based on search term
+        let filteredReservations = this.previousReservations;
+        
+        if (this.previousSearchTerm) {
+            filteredReservations = this.previousReservations.filter(reservation => {
+                const searchFields = [
+                    reservation.nom || '',
+                    reservation.prenom || '',
+                    reservation.date_res || '',
+                    reservation.horaire || '',
+                    reservation.notes || '',
+                    this.formatDate(reservation.date_res),
+                    new Date(reservation.date_res).getFullYear().toString(),
+                    this.getMonthName(new Date(reservation.date_res).getMonth())
+                ];
+                
+                return searchFields.some(field => 
+                    field.toLowerCase().includes(this.previousSearchTerm)
+                );
+            });
+        }
+
+        // Update count
+        if (countElement) {
+            countElement.textContent = `Total: ${filteredReservations.length} réservations`;
+        }
+
+        // Calculate pagination
+        const totalPages = Math.ceil(filteredReservations.length / this.previousItemsPerPage);
+        const startIndex = (this.previousCurrentPage - 1) * this.previousItemsPerPage;
+        const endIndex = startIndex + this.previousItemsPerPage;
+        const currentReservations = filteredReservations.slice(startIndex, endIndex);
+
+        // Render table rows
+        tableBody.innerHTML = '';
+        
+        if (currentReservations.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-4 py-8 text-center text-gray-500">
+                        ${this.previousSearchTerm ? 'Aucune réservation trouvée pour cette recherche' : 'Aucune réservation précédente'}
+                    </td>
+                </tr>
+            `;
+        } else {
+            currentReservations.forEach(reservation => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                const notes = reservation.notes ? 
+                    reservation.notes.split('\n').filter(note => note.trim()).join(', ') : 
+                    '-';
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm">
+                        <div class="font-medium text-gray-900">${this.formatDate(reservation.date_res)}</div>
+                        <div class="text-gray-500">${this.formatDateDay(reservation.date_res)}</div>
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <div class="font-medium text-gray-900">${reservation.prenom} ${reservation.nom}</div>
+                        ${reservation.tel1 ? `<div class="text-gray-500">${reservation.tel1}</div>` : ''}
+                    </td>
+                    <td class="px-4 py-3 text-sm">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            reservation.horaire === 'nuit' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800'
+                        }">
+                            ${reservation.horaire === 'nuit' ? 'Soir' : 'Après-midi'}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-sm text-gray-900 max-w-xs truncate" title="${notes}">
+                        ${notes}
+                    </td>
+                    <td class="px-4 py-3 text-sm font-medium space-x-2">
+                        <button onclick="agendaManager.showPreviousReservationDetails('${reservation.reservation_id}')" 
+                                class="text-blue-600 hover:text-blue-900 text-xs bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded">
+                            <i class="fas fa-eye mr-1"></i>Détails
+                        </button>
+                        <button onclick="window.open('contract-preview.html?id=${reservation.reservation_id}', '_blank')" 
+                                class="text-green-600 hover:text-green-900 text-xs bg-green-50 hover:bg-green-100 px-2 py-1 rounded">
+                            <i class="fas fa-print mr-1"></i>Imprimer
+                        </button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Update pagination info
+        if (paginationInfo && filteredReservations.length > 0) {
+            const start = startIndex + 1;
+            const end = Math.min(endIndex, filteredReservations.length);
+            paginationInfo.textContent = `Affichage de ${start} à ${end} sur ${filteredReservations.length} réservations`;
+        } else if (paginationInfo) {
+            paginationInfo.textContent = '';
+        }
+
+        // Update pagination controls
+        this.updatePreviousPaginationControls(totalPages, filteredReservations.length);
+    }
+
+    updatePreviousPaginationControls(totalPages, totalItems) {
+        const paginationControls = document.getElementById('previous-pagination-controls');
+        const prevMobile = document.getElementById('previous-prev-mobile');
+        const nextMobile = document.getElementById('previous-next-mobile');
+        
+        if (!paginationControls) return;
+
+        // Update mobile buttons
+        if (prevMobile) {
+            prevMobile.disabled = this.previousCurrentPage === 1;
+            prevMobile.onclick = () => {
+                if (this.previousCurrentPage > 1) {
+                    this.previousCurrentPage--;
+                    this.renderPreviousReservations();
+                }
+            };
+        }
+
+        if (nextMobile) {
+            nextMobile.disabled = this.previousCurrentPage === totalPages || totalPages === 0;
+            nextMobile.onclick = () => {
+                if (this.previousCurrentPage < totalPages) {
+                    this.previousCurrentPage++;
+                    this.renderPreviousReservations();
+                }
+            };
+        }
+
+        // Update desktop pagination
+        paginationControls.innerHTML = '';
+        
+        if (totalPages <= 1) return;
+
+        // Previous button
+        const prevBtn = document.createElement('button');
+        prevBtn.className = `relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${
+            this.previousCurrentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:text-gray-700'
+        }`;
+        prevBtn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        prevBtn.disabled = this.previousCurrentPage === 1;
+        prevBtn.onclick = () => {
+            if (this.previousCurrentPage > 1) {
+                this.previousCurrentPage--;
+                this.renderPreviousReservations();
+            }
+        };
+        paginationControls.appendChild(prevBtn);
+
+        // Page numbers
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, this.previousCurrentPage - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+        
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.className = `relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                i === this.previousCurrentPage
+                    ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                    : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+            }`;
+            pageBtn.textContent = i;
+            pageBtn.onclick = () => {
+                this.previousCurrentPage = i;
+                this.renderPreviousReservations();
+            };
+            paginationControls.appendChild(pageBtn);
+        }
+
+        // Next button
+        const nextBtn = document.createElement('button');
+        nextBtn.className = `relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 ${
+            this.previousCurrentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:text-gray-700'
+        }`;
+        nextBtn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        nextBtn.disabled = this.previousCurrentPage === totalPages;
+        nextBtn.onclick = () => {
+            if (this.previousCurrentPage < totalPages) {
+                this.previousCurrentPage++;
+                this.renderPreviousReservations();
+            }
+        };
+        paginationControls.appendChild(nextBtn);
+    }
+
+    async showPreviousReservationDetails(reservationId) {
+        try {
+            const { data, error } = await this.supabase
+                .from('reservations')
+                .select(`
+                    *,
+                    users!fk_reservations_created_by(username, nom)
+                `)
+                .eq('reservation_id', reservationId)
+                .single();
+
+            if (error) throw error;
+
+            const modal = document.getElementById('previous-details-modal');
+            const content = document.getElementById('previous-details-content');
+            
+            if (!modal || !content) return;
+
+            const reservation = data;
+            const createdBy = reservation.users?.nom || reservation.users?.username || 'Inconnu';
+            
+            content.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-gray-800 border-b pb-2">Informations Client</h4>
+                        <div class="space-y-2">
+                            <p><span class="font-medium">Nom:</span> ${reservation.nom}</p>
+                            <p><span class="font-medium">Prénom:</span> ${reservation.prenom}</p>
+                            ${reservation.cin ? `<p><span class="font-medium">CIN:</span> ${String(reservation.cin).padStart(8, '0')}</p>` : ''}
+                            ${reservation.tel1 ? `<p><span class="font-medium">Téléphone 1:</span> ${reservation.tel1}</p>` : ''}
+                            ${reservation.tel2 ? `<p><span class="font-medium">Téléphone 2:</span> ${reservation.tel2}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-gray-800 border-b pb-2">Détails Réservation</h4>
+                        <div class="space-y-2">
+                            <p><span class="font-medium">Date:</span> ${this.formatDate(reservation.date_res)}</p>
+                            <p><span class="font-medium">Jour:</span> ${this.formatDateDay(reservation.date_res)}</p>
+                            <p><span class="font-medium">Horaire:</span> 
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                    reservation.horaire === 'nuit' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800'
+                                }">
+                                    ${reservation.horaire === 'nuit' ? 'Soir (20h30-01h00)' : 'Après-midi (15h30-20h00)'}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-gray-800 border-b pb-2">Informations Financières</h4>
+                        <div class="space-y-2">
+                            <p><span class="font-medium">Montant Total:</span> <span class="text-green-600 font-semibold">${reservation.montant_tot || 0} DT</span></p>
+                            <p><span class="font-medium">Avance Payée:</span> <span class="text-blue-600 font-semibold">${reservation.avance || 0} DT</span></p>
+                            <p><span class="font-medium">Reste à Payer:</span> <span class="text-red-600 font-semibold">${reservation.montant_rest || 0} DT</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <h4 class="font-semibold text-gray-800 border-b pb-2">Informations Système</h4>
+                        <div class="space-y-2">
+                            <p><span class="font-medium">Créé par:</span> ${createdBy}</p>
+                            <p><span class="font-medium">Date de création:</span> ${this.formatDateTime(reservation.date_creation)}</p>
+                            <p><span class="font-medium">ID Réservation:</span> ${reservation.reservation_id}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                ${reservation.notes ? `
+                    <div class="mt-6">
+                        <h4 class="font-semibold text-gray-800 border-b pb-2 mb-3">Notes</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <pre class="whitespace-pre-wrap text-sm text-gray-700">${reservation.notes}</pre>
+                        </div>
+                    </div>
+                ` : ''}
+                
+                <div class="mt-6 flex justify-center">
+                    <button onclick="window.open('contract-preview.html?id=${reservation.reservation_id}', '_blank')" 
+                            class="bg-green-600 text-white px-6 py-2 rounded-lg font-semibold hover:bg-green-700 transition-colors flex items-center gap-2">
+                        <i class="fas fa-print"></i>
+                        Imprimer Contrat
+                    </button>
+                </div>
+            `;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.querySelector('.modal-content').classList.remove('scale-95', 'opacity-0');
+                modal.querySelector('.modal-content').classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+        } catch (error) {
+            console.error('Error loading reservation details:', error);
+            this.showError('Erreur lors du chargement des détails');
+        }
+    }
+
+
+ 
+
     renderTable() {
         const tableBody = document.getElementById('reservations-table');
         if (!tableBody) return;
