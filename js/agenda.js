@@ -83,7 +83,7 @@ class AgendaManager {
                 document.getElementById('previous-details-modal').classList.add('hidden');
             });
         }
-        }
+        
 
      
         // pdf download button
