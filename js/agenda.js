@@ -915,7 +915,7 @@ this.populateEditForm(reservation);
                     date_creation,
                     users!fk_reservations_created_by(username, nom)
                 `)
-                .lt('date_res', yesterdayStr)
+                .lte('date_res', yesterdayStr)
                 .order('date_res', { ascending: false });
 
             if (error) {
