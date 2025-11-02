@@ -15,6 +15,12 @@ class AgendaManager {
         this.reservationToDelete = null;
         this.selectedReservation = null;
 
+      // Previous reservations properties
+        this.previousReservations = [];
+        this.previousCurrentPage = 1;
+        this.previousItemsPerPage = 10;
+        this.previousSearchTerm = '';
+
         this.reservationToEdit = null;
         this.init();
     }
