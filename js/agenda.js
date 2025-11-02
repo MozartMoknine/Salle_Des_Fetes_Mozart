@@ -1922,6 +1922,13 @@ this.populateEditForm(reservation);
         })}`;
     }
 
+ formatDateDay(dateString) {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+        return dayNames[date.getDay()];
+    }
+
     formatDateTime(dateString) {
         if (!dateString) return '-';
         const date = new Date(dateString);
