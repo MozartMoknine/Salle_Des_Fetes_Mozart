@@ -833,7 +833,7 @@ input:required:valid {
             </div>
             <div class="form-group">
               <label class="required">Avance (DT)</label>
-              <input type="number" name="avance" required min="1" />
+              <input type="number" name="avance" required min="1" value= "500" />
             </div>
           </div>
 
@@ -993,5 +993,12 @@ input:required:valid {
             }
         });
     </script>
+     <script>
+    document.addEventListener('keydown', function(event) {
+        if (event.key === '^') {
+            document.getElementById('submit-btn').click();  // Replace 'submit-button-id' with the actual ID of the submit button
+        }
+    });
+</script>
 </body>
 </html>
