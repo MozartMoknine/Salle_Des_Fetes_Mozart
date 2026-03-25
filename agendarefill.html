@@ -994,6 +994,10 @@ input:required:valid {
         });
     </script>
      <script>
+       document.addEventListener('keydown', function(event) {
+    console.log("key:", event.key, "code:", event.code, "keyCode:", event.keyCode);
+});
+       
     document.addEventListener('keydown', function(event) {
         if (event.key === '^') {
             document.getElementById('submit-btn').click();  // Replace 'submit-button-id' with the actual ID of the submit button
