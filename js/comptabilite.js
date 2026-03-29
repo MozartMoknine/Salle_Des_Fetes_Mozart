@@ -2,11 +2,7 @@
 const { createClient } = supabase;
 const supabaseClient = createClient('https://qyskiegopptbugbbxbtp.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5c2tpZWdvcHB0YnVnYmJ4YnRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NTM4MDYsImV4cCI6MjA3MzAyOTgwNn0.HbAJ3nJIeJShOv3huwkWZuUeKadVQfnXX_ow0zoKEeg'
 );
-const { createClient } = supabase;
-const supabaseClient = createClient(
-    'https://0ec90b57d6e95fcbda19832f.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' // ta clé publique
-);
+
 
 class ComptabiliteManager {
     constructor() {
