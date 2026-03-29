@@ -2,6 +2,12 @@
 const { createClient } = supabase;
 const supabaseClient = createClient('https://qyskiegopptbugbbxbtp.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5c2tpZWdvcHB0YnVnYmJ4YnRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NTM4MDYsImV4cCI6MjA3MzAyOTgwNn0.HbAJ3nJIeJShOv3huwkWZuUeKadVQfnXX_ow0zoKEeg'
 );
+const { createClient } = supabase;
+const supabaseClient = createClient(
+    'https://0ec90b57d6e95fcbda19832f.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' // ta clé publique
+);
+
 class ComptabiliteManager {
     constructor() {
         this.selectedMonths = [];
@@ -111,7 +117,7 @@ class ComptabiliteManager {
 
             monthReservations.forEach(res => {
                 const eventType = res.event_type || 'Mariage';
-                const hasLighting = res.notes && res.notes.includes('Jeux de lumière');
+                const hasLighting = res.options && res.options.includes('Jeux de lumière');
 
                 if (eventType === 'Mariage') {
                     this.expenses[monthKey].servers += 12 * 40;
@@ -138,6 +144,7 @@ class ComptabiliteManager {
                 this.expenses[monthKey].fixedMonthlyElectricity = 450;
             }
 
+            // 🔹 Inclure directement les extras dans le total
             this.expenses[monthKey].total =
                 this.expenses[monthKey].servers +
                 this.expenses[monthKey].manager +
@@ -145,7 +152,8 @@ class ComptabiliteManager {
                 this.expenses[monthKey].cleaning +
                 this.expenses[monthKey].electricity +
                 this.expenses[monthKey].irpp +
-                this.expenses[monthKey].fixedMonthlyElectricity;
+                this.expenses[monthKey].fixedMonthlyElectricity +
+                this.expenses[monthKey].extra;
         });
     }
 
@@ -164,12 +172,13 @@ class ComptabiliteManager {
         });
 
         const totalRemain = filteredReservations.reduce((sum, res) => {
-            const remain = (res.montant_tot || 0) - (res.avance || 0);
-            return sum + remain;
+            const montant = parseFloat(res.montant_tot) || 0;
+            const avance = parseFloat(res.avance) || 0;
+            return sum + (montant - avance);
         }, 0);
 
         const totalExpenses = Object.values(this.expenses).reduce((sum, exp) => {
-            return sum + exp.total + exp.extra;
+            return sum + exp.total;
         }, 0);
 
         const netProfit = totalRemain - totalExpenses;
@@ -183,46 +192,46 @@ class ComptabiliteManager {
     }
 
     displayExpensesDetails() {
-    const container = document.getElementById('expenses-details');
-    container.innerHTML = '';
+        const container = document.getElementById('expenses-details');
+        container.innerHTML = '';
 
-    Object.entries(this.expenses).forEach(([monthKey, exp]) => {
-        const [year, month] = monthKey.split('-');
-        const monthName = this.getMonthName(parseInt(month));
+        Object.entries(this.expenses).forEach(([monthKey, exp]) => {
+            const [year, month] = monthKey.split('-');
+            const monthName = this.getMonthName(parseInt(month));
 
-        const monthDiv = document.createElement('div');
-        monthDiv.className = 'border border-gray-200 rounded-lg p-4 mb-4';
+            const monthDiv = document.createElement('div');
+            monthDiv.className = 'border border-gray-200 rounded-lg p-4 mb-4';
 
-        let html = `
-            <h3 class="font-bold text-gray-800 mb-3">${monthName} ${year}</h3>
-            ${this.createExpenseRow('Serveurs', exp.servers)}
-            ${this.createExpenseRow('Gérant', exp.manager)}
-            ${this.createExpenseRow('Technicien Lumière', exp.lightingTechnician)}
-            ${this.createExpenseRow('Nettoyage', exp.cleaning)}
-            ${this.createExpenseRow('Électricité (contrats)', exp.electricity)}
-            ${this.createExpenseRow('Électricité (fixe)', exp.fixedMonthlyElectricity)}
-            ${this.createExpenseRow('IRPP', exp.irpp)}
-        `;
+            let html = `
+                <h3 class="font-bold text-gray-800 mb-3">${monthName} ${year}</h3>
+                ${this.createExpenseRow('Serveurs', exp.servers)}
+                ${this.createExpenseRow('Gérant', exp.manager)}
+                ${this.createExpenseRow('Technicien Lumière', exp.lightingTechnician)}
+                ${this.createExpenseRow('Nettoyage', exp.cleaning)}
+                ${this.createExpenseRow('Électricité (contrats)', exp.electricity)}
+                ${this.createExpenseRow('Électricité (fixe)', exp.fixedMonthlyElectricity)}
+                ${this.createExpenseRow('IRPP', exp.irpp)}
+            `;
 
-        // 🔹 Ajout des dépenses supplémentaires avec description
-        if (exp.extra > 0) {
             const extras = this.extraExpenses.filter(e => e.month === parseInt(month));
             extras.forEach(e => {
                 html += this.createExpenseRow(e.desc, e.amount);
             });
-            html += this.createExpenseRow('Autres dépenses (total)', exp.extra);
-        }
+            if (exp.extra > 0) {
+                html += this.createExpenseRow('Autres dépenses (total)', exp.extra);
+            }
 
-        html += `
-            <div class="border-t border-gray-300 mt-2 pt-2">
-                ${this.createExpenseRow('Total Mois', exp.total + exp.extra, true)}
-            </div>
-        `;
+            html += `
+                <div class="border-t border-gray-300 mt-2 pt-2">
+                    ${this.createExpenseRow('Total Mois', exp.total, true)}
+                </div>
+            `;
 
-        monthDiv.innerHTML = html;
-        container.appendChild(monthDiv);
-    });
-}
+            monthDiv.innerHTML = html;
+            container.appendChild(monthDiv);
+        });
+    }
+
     createExpenseRow(label, amount, bold = false) {
         const className = bold ? 'font-bold text-gray-900' : 'text-gray-700';
         return `
@@ -230,8 +239,7 @@ class ComptabiliteManager {
                 <span>${label}</span>
                 <span>${amount.toFixed(2)} DT</span>
             </div>
-        `;
-    }
+                }
 
     displayContractsDetails(contracts) {
         const container = document.getElementById('contracts-details');
@@ -243,7 +251,7 @@ class ComptabiliteManager {
         }
 
         contracts.forEach(res => {
-            const remain = (res.montant_tot || 0) - (res.avance || 0);
+            const remain = (parseFloat(res.montant_tot) || 0) - (parseFloat(res.avance) || 0);
             const resDate = new Date(res.date_res).toLocaleDateString('fr-FR');
 
             const div = document.createElement('div');
@@ -284,6 +292,7 @@ class ComptabiliteManager {
         }
 
         this.expenses[monthKey].extra += amount;
+        this.expenses[monthKey].total += amount; // 🔹 inclure directement dans le total
 
         this.extraExpenses.push({ month, desc, amount });
         document.getElementById('extra-expense-desc').value = '';
@@ -329,6 +338,7 @@ class ComptabiliteManager {
         const monthKey = `${this.selectedYear}-${String(exp.month).padStart(2, '0')}`;
         if (this.expenses[monthKey]) {
             this.expenses[monthKey].extra -= exp.amount;
+            this.expenses[monthKey].total -= exp.amount; // 🔹 retirer du total
         }
         this.extraExpenses.splice(idx, 1);
         this.updateExtraExpensesList();
@@ -381,53 +391,49 @@ class ComptabiliteManager {
         yPosition += 8;
 
         Object.entries(this.expenses).forEach(([monthKey, exp]) => {
-    const [year, month] = monthKey.split('-');
-    const monthName = this.getMonthName(parseInt(month));
+            const [year, month] = monthKey.split('-');
+            const monthName = this.getMonthName(parseInt(month));
 
-    // Données de base
-    const expenseData = [
-        ['Serveurs', `${exp.servers.toFixed(2)} DT`],
-        ['Gérant', `${exp.manager.toFixed(2)} DT`],
-        ['Technicien Lumière', `${exp.lightingTechnician.toFixed(2)} DT`],
-        ['Nettoyage', `${exp.cleaning.toFixed(2)} DT`],
-        ['Électricité (contrats)', `${exp.electricity.toFixed(2)} DT`],
-        ['Électricité (fixe)', `${exp.fixedMonthlyElectricity.toFixed(2)} DT`],
-        ['IRPP', `${exp.irpp.toFixed(2)} DT`]
-    ];
+            const expenseData = [
+                ['Serveurs', `${exp.servers.toFixed(2)} DT`],
+                ['Gérant', `${exp.manager.toFixed(2)} DT`],
+                ['Technicien Lumière', `${exp.lightingTechnician.toFixed(2)} DT`],
+                ['Nettoyage', `${exp.cleaning.toFixed(2)} DT`],
+                ['Électricité (contrats)', `${exp.electricity.toFixed(2)} DT`],
+                ['Électricité (fixe)', `${exp.fixedMonthlyElectricity.toFixed(2)} DT`],
+                ['IRPP', `${exp.irpp.toFixed(2)} DT`]
+            ];
 
-    // 🔹 Ajout des dépenses supplémentaires avec description
-    const extras = this.extraExpenses.filter(e => e.month === parseInt(month));
-    extras.forEach(e => {
-        expenseData.push([e.desc, `${e.amount.toFixed(2)} DT`]);
-    });
+            const extras = this.extraExpenses.filter(e => e.month === parseInt(month));
+            extras.forEach(e => {
+                expenseData.push([e.desc, `${e.amount.toFixed(2)} DT`]);
+            });
+            if (exp.extra > 0) {
+                expenseData.push(['Autres dépenses (total)', `${exp.extra.toFixed(2)} DT`]);
+            }
 
-    if (exp.extra > 0) {
-        expenseData.push(['Autres dépenses (total)', `${exp.extra.toFixed(2)} DT`]);
-    }
+            expenseData.push(['Total', `${exp.total.toFixed(2)} DT`]);
 
-    expenseData.push(['Total', `${(exp.total + exp.extra).toFixed(2)} DT`]);
+            if (doc.lastAutoTable && doc.lastAutoTable.finalY + 60 > pageHeight) {
+                doc.addPage();
+                yPosition = 15;
+            }
 
-    // Rendu PDF
-    if (doc.lastAutoTable && doc.lastAutoTable.finalY + 60 > pageHeight) {
-        doc.addPage();
-        yPosition = 15;
-    }
+            doc.setFontSize(11);
+            doc.text(`${monthName} ${year}`, 15, yPosition);
+            yPosition += 5;
 
-    doc.setFontSize(11);
-    doc.text(`${monthName} ${year}`, 15, yPosition);
-    yPosition += 5;
+            doc.autoTable({
+                startY: yPosition,
+                head: [['Catégorie', 'Montant']],
+                body: expenseData,
+                theme: 'grid',
+                headStyles: { fillColor: [200, 100, 100], textColor: [255, 255, 255], fontStyle: 'bold' },
+                bodyStyles: { textColor: [0, 0, 0] }
+            });
 
-    doc.autoTable({
-        startY: yPosition,
-        head: [['Catégorie', 'Montant']],
-        body: expenseData,
-        theme: 'grid',
-        headStyles: { fillColor: [200, 100, 100], textColor: [255, 255, 255], fontStyle: 'bold' },
-        bodyStyles: { textColor: [0, 0, 0] }
-    });
-
-    yPosition = doc.lastAutoTable.finalY + 8;
-});
+            yPosition = doc.lastAutoTable.finalY + 8;
+        });
 
         doc.save(`comptabilite_${this.selectedYear}.pdf`);
     }
@@ -455,30 +461,29 @@ class ComptabiliteManager {
 
         const expenseRows = [['DÉTAILS DES DÉPENSES']];
         Object.entries(this.expenses).forEach(([monthKey, exp]) => {
-    const [year, month] = monthKey.split('-');
-    const monthName = this.getMonthName(parseInt(month));
-    expenseRows.push([`${monthName} ${year}`]);
-    expenseRows.push(['Serveurs', exp.servers]);
-    expenseRows.push(['Gérant', exp.manager]);
-    expenseRows.push(['Technicien Lumière', exp.lightingTechnician]);
-    expenseRows.push(['Nettoyage', exp.cleaning]);
-    expenseRows.push(['Électricité (contrats)', exp.electricity]);
-    expenseRows.push(['Électricité (fixe)', exp.fixedMonthlyElectricity]);
-    expenseRows.push(['IRPP', exp.irpp]);
+            const [year, month] = monthKey.split('-');
+            const monthName = this.getMonthName(parseInt(month));
+            expenseRows.push([`${monthName} ${year}`]);
+            expenseRows.push(['Serveurs', exp.servers]);
+            expenseRows.push(['Gérant', exp.manager]);
+            expenseRows.push(['Technicien Lumière', exp.lightingTechnician]);
+            expenseRows.push(['Nettoyage', exp.cleaning]);
+            expenseRows.push(['Électricité (contrats)', exp.electricity]);
+            expenseRows.push(['Électricité (fixe)', exp.fixedMonthlyElectricity]);
+            expenseRows.push(['IRPP', exp.irpp]);
 
-    // 🔹 Ajout des dépenses supplémentaires avec description
-    const extras = this.extraExpenses.filter(e => e.month === parseInt(month));
-    extras.forEach(e => {
-        expenseRows.push([e.desc, e.amount]);
-    });
+            // 🔹 Ajout des dépenses supplémentaires avec description
+            const extras = this.extraExpenses.filter(e => e.month === parseInt(month));
+            extras.forEach(e => {
+                expenseRows.push([e.desc, e.amount]);
+            });
+            if (exp.extra > 0) {
+                expenseRows.push(['Autres dépenses (total)', exp.extra]);
+            }
 
-    if (exp.extra > 0) {
-        expenseRows.push(['Autres dépenses (total)', exp.extra]);
-    }
-
-    expenseRows.push(['TOTAL MOIS', exp.total + exp.extra]);
-    expenseRows.push([]);
-});
+            expenseRows.push(['TOTAL MOIS', exp.total]);
+            expenseRows.push([]);
+        });
 
         const ws2 = XLSX.utils.aoa_to_sheet(expenseRows);
         XLSX.utils.book_append_sheet(wb, ws2, 'Dépenses');
