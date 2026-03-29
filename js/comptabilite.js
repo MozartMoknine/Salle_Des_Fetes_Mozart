@@ -111,7 +111,7 @@ class ComptabiliteManager {
 
             monthReservations.forEach(res => {
                 const eventType = res.event_type || 'Mariage';
-                const hasLighting = res.options && res.options.includes('Jeux de lumière');
+                const hasLighting = res.notes && res.notes.includes('Jeux de lumière');
 
                 if (eventType === 'Mariage') {
                     this.expenses[monthKey].servers += 12 * 40;
