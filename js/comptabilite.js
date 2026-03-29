@@ -235,7 +235,9 @@ class ComptabiliteManager {
                 <span>${label}</span>
                 <span>${amount.toFixed(2)} DT</span>
             </div>
-                }
+                `;
+}
+
 
     displayContractsDetails(contracts) {
         const container = document.getElementById('contracts-details');
