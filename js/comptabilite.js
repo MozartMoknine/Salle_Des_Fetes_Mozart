@@ -183,33 +183,46 @@ class ComptabiliteManager {
     }
 
     displayExpensesDetails() {
-        const container = document.getElementById('expenses-details');
-        container.innerHTML = '';
+    const container = document.getElementById('expenses-details');
+    container.innerHTML = '';
 
-        Object.entries(this.expenses).forEach(([monthKey, exp]) => {
-            const [year, month] = monthKey.split('-');
-            const monthName = this.getMonthName(parseInt(month));
+    Object.entries(this.expenses).forEach(([monthKey, exp]) => {
+        const [year, month] = monthKey.split('-');
+        const monthName = this.getMonthName(parseInt(month));
 
-            const monthDiv = document.createElement('div');
-            monthDiv.className = 'border border-gray-200 rounded-lg p-4 mb-4';
-            monthDiv.innerHTML = `
-                <h3 class="font-bold text-gray-800 mb-3">${monthName} ${year}</h3>
-                ${this.createExpenseRow('Serveurs', exp.servers)}
-                ${this.createExpenseRow('Gérant', exp.manager)}
-                ${this.createExpenseRow('Technicien Lumière', exp.lightingTechnician)}
-                ${this.createExpenseRow('Nettoyage', exp.cleaning)}
-                ${this.createExpenseRow('Électricité (contrats)', exp.electricity)}
-                ${this.createExpenseRow('Électricité (fixe)', exp.fixedMonthlyElectricity)}
-                ${this.createExpenseRow('IRPP', exp.irpp)}
-                ${exp.extra > 0 ? this.createExpenseRow('Autres dépenses', exp.extra) : ''}
-                <div class="border-t border-gray-300 mt-2 pt-2">
-                    ${this.createExpenseRow('Total Mois', exp.total + exp.extra, true)}
-                </div>
-            `;
-            container.appendChild(monthDiv);
-        });
-    }
+        const monthDiv = document.createElement('div');
+        monthDiv.className = 'border border-gray-200 rounded-lg p-4 mb-4';
 
+        let html = `
+            <h3 class="font-bold text-gray-800 mb-3">${monthName} ${year}</h3>
+            ${this.createExpenseRow('Serveurs', exp.servers)}
+            ${this.createExpenseRow('Gérant', exp.manager)}
+            ${this.createExpenseRow('Technicien Lumière', exp.lightingTechnician)}
+            ${this.createExpenseRow('Nettoyage', exp.cleaning)}
+            ${this.createExpenseRow('Électricité (contrats)', exp.electricity)}
+            ${this.createExpenseRow('Électricité (fixe)', exp.fixedMonthlyElectricity)}
+            ${this.createExpenseRow('IRPP', exp.irpp)}
+        `;
+
+        // 🔹 Ajout des dépenses supplémentaires avec description
+        if (exp.extra > 0) {
+            const extras = this.extraExpenses.filter(e => e.month === parseInt(month));
+            extras.forEach(e => {
+                html += this.createExpenseRow(e.desc, e.amount);
+            });
+            html += this.createExpenseRow('Autres dépenses (total)', exp.extra);
+        }
+
+        html += `
+            <div class="border-t border-gray-300 mt-2 pt-2">
+                ${this.createExpenseRow('Total Mois', exp.total + exp.extra, true)}
+            </div>
+        `;
+
+        monthDiv.innerHTML = html;
+        container.appendChild(monthDiv);
+    });
+}
     createExpenseRow(label, amount, bold = false) {
         const className = bold ? 'font-bold text-gray-900' : 'text-gray-700';
         return `
