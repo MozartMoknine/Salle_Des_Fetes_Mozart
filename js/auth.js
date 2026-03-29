@@ -192,7 +192,7 @@ console.log('Attaching logout listener...');
 
     isProtectedPage() {
         const currentPage = window.location.pathname.split('/').pop();
-        const protectedPages = ['contract.html', 'agenda.html','agendarefill.html', 'calendar.html'];
+        const protectedPages = ['contract.html', 'agenda.html','agendarefill.html', 'calendar.html', 'comptabilite.html'];
         return protectedPages.includes(currentPage);
     }
 
