@@ -3,7 +3,6 @@ const { createClient } = supabase;
 const supabaseClient = createClient('https://qyskiegopptbugbbxbtp.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5c2tpZWdvcHB0YnVnYmJ4YnRwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTc0NTM4MDYsImV4cCI6MjA3MzAyOTgwNn0.HbAJ3nJIeJShOv3huwkWZuUeKadVQfnXX_ow0zoKEeg'
 );
 
-
 class ComptabiliteManager {
     constructor() {
         this.selectedMonths = [];
@@ -90,21 +89,33 @@ class ComptabiliteManager {
     }
 
     calculateExpenses() {
-        this.expenses = {};
-
         this.selectedMonths.forEach(month => {
             const monthKey = `${this.selectedYear}-${String(month).padStart(2, '0')}`;
-            this.expenses[monthKey] = {
-                servers: 0,
-                manager: 0,
-                lightingTechnician: 0,
-                cleaning: 0,
-                electricity: 0,
-                irpp: 0,
-                fixedMonthlyElectricity: 0,
-                total: 0,
-                extra: 0
-            };
+
+            // ⚠️ Ne pas réinitialiser extra si déjà présent
+            if (!this.expenses[monthKey]) {
+                this.expenses[monthKey] = {
+                    servers: 0,
+                    manager: 0,
+                    lightingTechnician: 0,
+                    cleaning: 0,
+                    electricity: 0,
+                    irpp: 0,
+                    fixedMonthlyElectricity: 0,
+                    total: 0,
+                    extra: 0
+                };
+            } else {
+                this.expenses[monthKey].servers = 0;
+                this.expenses[monthKey].manager = 0;
+                this.expenses[monthKey].lightingTechnician = 0;
+                this.expenses[monthKey].cleaning = 0;
+                this.expenses[monthKey].electricity = 0;
+                this.expenses[monthKey].irpp = 0;
+                this.expenses[monthKey].fixedMonthlyElectricity = 0;
+                this.expenses[monthKey].total = 0;
+                // 🔹 extra reste intact
+            }
 
             const monthReservations = this.reservations.filter(res => {
                 const resDate = new Date(res.date_res);
@@ -140,7 +151,7 @@ class ComptabiliteManager {
                 this.expenses[monthKey].fixedMonthlyElectricity = 450;
             }
 
-            // 🔹 Inclure directement les extras dans le total
+            // 🔹 Inclure extra dans le total
             this.expenses[monthKey].total =
                 this.expenses[monthKey].servers +
                 this.expenses[monthKey].manager +
@@ -186,6 +197,7 @@ class ComptabiliteManager {
         this.displayExpensesDetails();
         this.displayContractsDetails(filteredReservations);
     }
+
 
     displayExpensesDetails() {
         const container = document.getElementById('expenses-details');
