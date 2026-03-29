@@ -24,38 +24,69 @@
     <link rel="stylesheet" href="styles/main.css">
     <style>
         .month-chip {
-            cursor: pointer;
-            user-select: none;
-            transition: all 0.2s;
-        }
-        .month-chip.active {
-            @apply bg-gold text-black;
-        }
-        .month-chip:not(.active) {
-            @apply bg-gray-200 text-gray-700;
-        }
-        .expense-row {
-            @apply flex justify-between items-center py-3 px-4 border-b border-gray-200 hover:bg-gray-50;
-        }
-        .expense-value {
-            @apply text-right font-semibold text-gray-800;
-        }
-        .summary-card {
-            @apply bg-gradient-to-br rounded-lg p-6 shadow-lg;
-        }
-        .summary-title {
-            @apply text-sm font-semibold text-gray-600 uppercase tracking-wide;
-        }
-        .summary-value {
-            @apply text-3xl font-bold mt-2;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        #loading-overlay {
-            animation: spin 1s linear infinite;
-        }
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s;
+}
+
+.month-chip.active {
+    background-color: #FFD700; /* gold */
+    color: #000000; /* black */
+}
+
+.month-chip:not(.active) {
+    background-color: #E5E7EB; /* gray-200 */
+    color: #374151; /* gray-700 */
+}
+
+.expense-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem; /* py-3 px-4 */
+    border-bottom: 1px solid #E5E7EB; /* border-gray-200 */
+}
+
+.expense-row:hover {
+    background-color: #F9FAFB; /* hover:bg-gray-50 */
+}
+
+.expense-value {
+    text-align: right;
+    font-weight: 600; /* font-semibold */
+    color: #1F2937; /* text-gray-800 */
+}
+
+.summary-card {
+    background-image: linear-gradient(to bottom right, #F9FAFB, #D1D5DB); /* bg-gradient-to-br */
+    border-radius: 0.5rem; /* rounded-lg */
+    padding: 1.5rem; /* p-6 */
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1),
+                0 4px 6px -2px rgba(0,0,0,0.05); /* shadow-lg */
+}
+
+.summary-title {
+    font-size: 0.875rem; /* text-sm */
+    font-weight: 600; /* font-semibold */
+    color: #4B5563; /* text-gray-600 */
+    text-transform: uppercase;
+    letter-spacing: 0.05em; /* tracking-wide */
+}
+
+.summary-value {
+    font-size: 1.875rem; /* text-3xl */
+    font-weight: 700; /* font-bold */
+    margin-top: 0.5rem; /* mt-2 */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#loading-overlay {
+    animation: spin 1s linear infinite;
+}
     </style>
 </head>
 <body class="bg-gray-50">
