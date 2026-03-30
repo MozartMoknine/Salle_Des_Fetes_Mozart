@@ -8,15 +8,19 @@ class ComptabiliteManager {
         this.selectedMonths = [];
         this.selectedYear = new Date().getFullYear();
         this.reservations = [];
-        this.extraExpenses = [];
+        this.monthlyCharges = [];
+        this.selectedChargeMonths = [];
+        this.editingChargeId = null;
         this.expenses = {};
         this.init();
     }
 
     async init() {
         this.populateYears();
+        this.populateChargeYears();
         this.bindEvents();
         await this.loadReservations();
+       await this.loadMonthlyCharges();
     }
 
     populateYears() {
@@ -30,6 +34,18 @@ class ComptabiliteManager {
             yearSelect.appendChild(option);
         }
         this.selectedYear = currentYear;
+    }
+
+    populateChargeYears() {
+        const chargeYearSelect = document.getElementById('charge-year');
+        const currentYear = new Date().getFullYear();
+        for (let i = currentYear - 5; i <= currentYear + 2; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            if (i === currentYear) option.selected = true;
+            chargeYearSelect.appendChild(option);
+        }
     }
 
     bindEvents() {
@@ -50,12 +66,39 @@ class ComptabiliteManager {
             });
         });
 
+        document.querySelectorAll('.charge-month-chip').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const month = parseInt(btn.dataset.month);
+                if (this.selectedChargeMonths.includes(month)) {
+                    this.selectedChargeMonths = this.selectedChargeMonths.filter(m => m !== month);
+                    btn.classList.remove('bg-gold');
+                    btn.classList.add('bg-gray-200');
+                    btn.classList.remove('text-black');
+                    btn.classList.add('text-gray-700');
+                } else {
+                    this.selectedChargeMonths.push(month);
+                    btn.classList.add('bg-gold');
+                    btn.classList.remove('bg-gray-200');
+                    btn.classList.add('text-black');
+                    btn.classList.remove('text-gray-700');
+                }
+            });
+        });
+
         document.getElementById('apply-filter').addEventListener('click', () => {
             this.calculate();
         });
 
-        document.getElementById('add-extra-expense').addEventListener('click', () => {
-            this.addExtraExpense();
+        document.getElementById('add-charge-btn').addEventListener('click', () => {
+            this.addCharge();
+        });
+
+        document.getElementById('update-charge-btn').addEventListener('click', () => {
+            this.updateCharge();
+        });
+
+        document.getElementById('cancel-edit-charge-btn').addEventListener('click', () => {
+            this.cancelEditCharge();
         });
 
         document.getElementById('download-pdf-btn').addEventListener('click', () => {
@@ -79,6 +122,22 @@ class ComptabiliteManager {
         }
     }
 
+    async loadMonthlyCharges() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('monthly_charges')
+                .select('*');
+            if (error) throw error;
+            this.monthlyCharges = data || [];
+
+          
+        
+            this.displayChargesList();
+        } catch (error) {
+            console.error('Error loading monthly charges:', error);
+        }
+    }
+
     getMonthName(month) {
         const months = ['', 'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
         return months[month];
@@ -88,11 +147,195 @@ class ComptabiliteManager {
         return month >= 6 && month <= 9;
     }
 
+    async addCharge() {
+        const year = parseInt(document.getElementById('charge-year').value);
+        const label = document.getElementById('charge-label').value.trim() || 'Autre charge';
+        const amount = parseFloat(document.getElementById('charge-amount').value) || 0;
+
+        if (this.selectedChargeMonths.length === 0) {
+            alert('Veuillez sélectionner au moins un mois');
+            return;
+        }
+
+        if (amount <= 0) {
+            alert('Veuillez entrer un montant valide');
+            return;
+        }
+
+        try {
+            for (const month of this.selectedChargeMonths) {
+                const { error } = await supabaseClient
+                    .from('monthly_charges')
+                    .insert([{ year, month, label, amount }]);
+                if (error) throw error;
+            }
+
+            this.clearChargeForm();
+            await this.loadMonthlyCharges();
+            alert('Charge(s) ajoutée(s) avec succès');
+          this.calculate();
+        } catch (error) {
+            console.error('Error adding charge:', error);
+            alert('Erreur lors de l\'ajout de la charge');
+        }
+    }
+
+    async updateCharge() {
+        if (!this.editingChargeId) return;
+
+        const label = document.getElementById('charge-label').value.trim() || 'Autre charge';
+        const amount = parseFloat(document.getElementById('charge-amount').value) || 0;
+
+        if (amount <= 0) {
+            alert('Veuillez entrer un montant valide');
+            return;
+        }
+
+        try {
+            const { error } = await supabaseClient
+                .from('monthly_charges')
+                .update({ label, amount, updated_at: new Date().toISOString() })
+                .eq('id', this.editingChargeId);
+
+            if (error) throw error;
+
+            this.cancelEditCharge();
+            await this.loadMonthlyCharges();
+            alert('Charge mise à jour avec succès');
+          this.calculate();
+        } catch (error) {
+            console.error('Error updating charge:', error);
+            alert('Erreur lors de la mise à jour');
+        }
+    }
+
+    editCharge(chargeId) {
+        const charge = this.monthlyCharges.find(c => c.id === chargeId);
+        if (!charge) return;
+
+        this.editingChargeId = chargeId;
+        document.getElementById('charge-year').value = charge.year;
+        document.getElementById('charge-label').value = charge.label;
+        document.getElementById('charge-amount').value = charge.amount;
+
+        document.querySelectorAll('.charge-month-chip').forEach(btn => {
+            btn.classList.remove('bg-gold', 'text-black');
+            btn.classList.add('bg-gray-200', 'text-gray-700');
+        });
+
+        const monthBtn = document.querySelector(`[data-month="${charge.month}"]`);
+        if (monthBtn) {
+            monthBtn.classList.add('bg-gold', 'text-black');
+            monthBtn.classList.remove('bg-gray-200', 'text-gray-700');
+        }
+
+        this.selectedChargeMonths = [charge.month];
+
+        document.getElementById('add-charge-btn').style.display = 'none';
+        document.getElementById('update-charge-btn').style.display = 'inline-block';
+        document.getElementById('cancel-edit-charge-btn').style.display = 'inline-block';
+    }
+
+    cancelEditCharge() {
+        this.editingChargeId = null;
+        this.clearChargeForm();
+        document.getElementById('add-charge-btn').style.display = 'inline-block';
+        document.getElementById('update-charge-btn').style.display = 'none';
+        document.getElementById('cancel-edit-charge-btn').style.display = 'none';
+    }
+
+    async deleteCharge(chargeId) {
+        if (!confirm('Êtes-vous sûr de vouloir supprimer cette charge?')) return;
+
+        try {
+            const { error } = await supabaseClient
+                .from('monthly_charges')
+                .delete()
+                .eq('id', chargeId);
+
+            if (error) throw error;
+            await this.loadMonthlyCharges();
+            this.calculate();
+        } catch (error) {
+            console.error('Error deleting charge:', error);
+            alert('Erreur lors de la suppression');
+        }
+    }
+
+    clearChargeForm() {
+        document.getElementById('charge-label').value = '';
+        document.getElementById('charge-amount').value = '';
+        this.selectedChargeMonths = [];
+
+        document.querySelectorAll('.charge-month-chip').forEach(btn => {
+            btn.classList.remove('bg-gold', 'text-black');
+            btn.classList.add('bg-gray-200', 'text-gray-700');
+        });
+    }
+
+    displayChargesList() {
+        const container = document.getElementById('charges-list');
+        container.innerHTML = '';
+
+          if (!this.monthlyCharges || this.monthlyCharges.length === 0) {
+    container.innerHTML = '<p class="text-gray-500 italic">Aucune charge configurée</p>';
+    return;
+}
+
+        const chargesByYearMonth = {};
+        this.monthlyCharges.forEach(charge => {
+            const key = `${charge.year}-${charge.month}`;
+            if (!chargesByYearMonth[key]) {
+                chargesByYearMonth[key] = { year: charge.year, month: charge.month, charges: [] };
+            }
+            chargesByYearMonth[key].charges.push(charge);
+        });
+
+        Object.entries(chargesByYearMonth)
+            .sort((a, b) => {
+                const [yearA, monthA] = a[0].split('-').map(Number);
+                const [yearB, monthB] = b[0].split('-').map(Number);
+                if (yearA !== yearB) return yearA - yearB;
+                return monthA - monthB;
+            })
+            .forEach(([key, data]) => {
+                const monthDiv = document.createElement('div');
+                monthDiv.className = 'border border-gray-200 rounded-lg p-4 bg-gray-50 mb-3';
+
+                let html = `
+                    <div class="font-bold text-gray-800 mb-3">${this.getMonthName(data.month)} ${data.year}</div>
+                `;
+
+                data.charges.forEach(charge => {
+                    html += `
+                        <div class="flex justify-between items-center py-2 px-3 bg-white rounded mb-2 border border-gray-100">
+                            <div>
+                                <div class="font-semibold text-gray-800">${charge.label}</div>
+                                <div class="text-sm text-gray-600">${charge.amount.toFixed(2)} DT</div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="comptabiliteManager.editCharge('${charge.id}')" class="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="comptabiliteManager.deleteCharge('${charge.id}')" class="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                monthDiv.innerHTML = html;
+                container.appendChild(monthDiv);
+            });
+    }
+
     calculateExpenses() {
+        this.expenses = {};
+
         this.selectedMonths.forEach(month => {
             const monthKey = `${this.selectedYear}-${String(month).padStart(2, '0')}`;
 
-            // ⚠️ Ne pas réinitialiser extra si déjà présent
             if (!this.expenses[monthKey]) {
                 this.expenses[monthKey] = {
                     servers: 0,
@@ -102,19 +345,9 @@ class ComptabiliteManager {
                     electricity: 0,
                     irpp: 0,
                     fixedMonthlyElectricity: 0,
-                    total: 0,
-                    extra: 0
+                    monthlyCharges: 0,
+                    total: 0
                 };
-            } else {
-                this.expenses[monthKey].servers = 0;
-                this.expenses[monthKey].manager = 0;
-                this.expenses[monthKey].lightingTechnician = 0;
-                this.expenses[monthKey].cleaning = 0;
-                this.expenses[monthKey].electricity = 0;
-                this.expenses[monthKey].irpp = 0;
-                this.expenses[monthKey].fixedMonthlyElectricity = 0;
-                this.expenses[monthKey].total = 0;
-                // 🔹 extra reste intact
             }
 
             const monthReservations = this.reservations.filter(res => {
@@ -151,7 +384,9 @@ class ComptabiliteManager {
                 this.expenses[monthKey].fixedMonthlyElectricity = 450;
             }
 
-            // 🔹 Inclure extra dans le total
+            const monthCharges = this.monthlyCharges.filter(c => c.year === this.selectedYear && c.month === month);
+            this.expenses[monthKey].monthlyCharges = monthCharges.reduce((sum, c) => sum + parseFloat(c.amount), 0);
+
             this.expenses[monthKey].total =
                 this.expenses[monthKey].servers +
                 this.expenses[monthKey].manager +
@@ -160,7 +395,7 @@ class ComptabiliteManager {
                 this.expenses[monthKey].electricity +
                 this.expenses[monthKey].irpp +
                 this.expenses[monthKey].fixedMonthlyElectricity +
-                this.expenses[monthKey].extra;
+                this.expenses[monthKey].monthlyCharges;
         });
     }
 
@@ -172,6 +407,9 @@ class ComptabiliteManager {
 
         this.calculateExpenses();
 
+      // monthly depenses
+       this.loadMonthlyCharges();
+      
         const filteredReservations = this.reservations.filter(res => {
             const resDate = new Date(res.date_res);
             return resDate.getFullYear() === this.selectedYear &&
@@ -198,7 +436,6 @@ class ComptabiliteManager {
         this.displayContractsDetails(filteredReservations);
     }
 
-
     displayExpensesDetails() {
         const container = document.getElementById('expenses-details');
         container.innerHTML = '';
@@ -210,7 +447,7 @@ class ComptabiliteManager {
             const monthDiv = document.createElement('div');
             monthDiv.className = 'border border-gray-200 rounded-lg p-4 mb-4';
 
-            let html = `
+            const html = `
                 <h3 class="font-bold text-gray-800 mb-3">${monthName} ${year}</h3>
                 ${this.createExpenseRow('Serveurs', exp.servers)}
                 ${this.createExpenseRow('Gérant', exp.manager)}
@@ -219,17 +456,7 @@ class ComptabiliteManager {
                 ${this.createExpenseRow('Électricité (contrats)', exp.electricity)}
                 ${this.createExpenseRow('Électricité (fixe)', exp.fixedMonthlyElectricity)}
                 ${this.createExpenseRow('IRPP', exp.irpp)}
-            `;
-
-            const extras = this.extraExpenses.filter(e => e.month === parseInt(month));
-            extras.forEach(e => {
-                html += this.createExpenseRow(e.desc, e.amount);
-            });
-            if (exp.extra > 0) {
-                html += this.createExpenseRow('Autres dépenses (total)', exp.extra);
-            }
-
-            html += `
+                ${exp.monthlyCharges > 0 ? this.createExpenseRow('Charges Mensuels', exp.monthlyCharges) : ''}
                 <div class="border-t border-gray-300 mt-2 pt-2">
                     ${this.createExpenseRow('Total Mois', exp.total, true)}
                 </div>
@@ -247,9 +474,8 @@ class ComptabiliteManager {
                 <span>${label}</span>
                 <span>${amount.toFixed(2)} DT</span>
             </div>
-                `;
-}
-
+        `;
+    }
 
     displayContractsDetails(contracts) {
         const container = document.getElementById('contracts-details');
@@ -274,85 +500,6 @@ class ComptabiliteManager {
             `;
             container.appendChild(div);
         });
-    }
-
-    addExtraExpense() {
-        const month = parseInt(document.getElementById('extra-expense-month').value);
-        const desc = document.getElementById('extra-expense-desc').value;
-        const amount = parseFloat(document.getElementById('extra-expense-amount').value) || 0;
-
-        if (!desc || amount <= 0) {
-            alert('Veuillez remplir tous les champs');
-            return;
-        }
-
-        const monthKey = `${this.selectedYear}-${String(month).padStart(2, '0')}`;
-        if (!this.expenses[monthKey]) {
-            this.expenses[monthKey] = {
-                servers: 0,
-                manager: 0,
-                lightingTechnician: 0,
-                cleaning: 0,
-                electricity: 0,
-                irpp: 0,
-                fixedMonthlyElectricity: 0,
-                total: 0,
-                extra: 0
-            };
-        }
-
-        this.expenses[monthKey].extra += amount;
-        this.expenses[monthKey].total += amount; // 🔹 inclure directement dans le total
-
-        this.extraExpenses.push({ month, desc, amount });
-        document.getElementById('extra-expense-desc').value = '';
-        document.getElementById('extra-expense-amount').value = '';
-
-        this.updateExtraExpensesList();
-        this.calculate();
-    }
-
-    updateExtraExpensesList() {
-        const section = document.getElementById('extra-expenses-section');
-        const list = document.getElementById('extra-expenses-list');
-
-        if (this.extraExpenses.length === 0) {
-            section.style.display = 'none';
-            return;
-        }
-
-        section.style.display = 'block';
-        list.innerHTML = '';
-
-        this.extraExpenses.forEach((exp, idx) => {
-            const div = document.createElement('div');
-            div.className = 'flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-lg';
-            div.innerHTML = `
-                <div>
-                    <span class="font-semibold">${exp.desc}</span>
-                    <span class="text-sm text-gray-600 ml-2">(${this.getMonthName(exp.month)})</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    <span class="font-bold text-red-600">${exp.amount.toFixed(2)} DT</span>
-                    <button onclick="comptabiliteManager.removeExtraExpense(${idx})" class="text-red-500 hover:text-red-700">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
-            list.appendChild(div);
-        });
-    }
-
-    removeExtraExpense(idx) {
-        const exp = this.extraExpenses[idx];
-        const monthKey = `${this.selectedYear}-${String(exp.month).padStart(2, '0')}`;
-        if (this.expenses[monthKey]) {
-            this.expenses[monthKey].extra -= exp.amount;
-            this.expenses[monthKey].total -= exp.amount; // 🔹 retirer du total
-        }
-        this.extraExpenses.splice(idx, 1);
-        this.updateExtraExpensesList();
-        this.calculate();
     }
 
     exportPDF() {
@@ -411,18 +558,10 @@ class ComptabiliteManager {
                 ['Nettoyage', `${exp.cleaning.toFixed(2)} DT`],
                 ['Électricité (contrats)', `${exp.electricity.toFixed(2)} DT`],
                 ['Électricité (fixe)', `${exp.fixedMonthlyElectricity.toFixed(2)} DT`],
-                ['IRPP', `${exp.irpp.toFixed(2)} DT`]
+                ['IRPP', `${exp.irpp.toFixed(2)} DT`],
+                ...(exp.monthlyCharges > 0 ? [['Charges Mensuels', `${exp.monthlyCharges.toFixed(2)} DT`]] : []),
+                ['Total', `${exp.total.toFixed(2)} DT`]
             ];
-
-            const extras = this.extraExpenses.filter(e => e.month === parseInt(month));
-            extras.forEach(e => {
-                expenseData.push([e.desc, `${e.amount.toFixed(2)} DT`]);
-            });
-            if (exp.extra > 0) {
-                expenseData.push(['Autres dépenses (total)', `${exp.extra.toFixed(2)} DT`]);
-            }
-
-            expenseData.push(['Total', `${exp.total.toFixed(2)} DT`]);
 
             if (doc.lastAutoTable && doc.lastAutoTable.finalY + 60 > pageHeight) {
                 doc.addPage();
@@ -481,16 +620,9 @@ class ComptabiliteManager {
             expenseRows.push(['Électricité (contrats)', exp.electricity]);
             expenseRows.push(['Électricité (fixe)', exp.fixedMonthlyElectricity]);
             expenseRows.push(['IRPP', exp.irpp]);
-
-            // 🔹 Ajout des dépenses supplémentaires avec description
-            const extras = this.extraExpenses.filter(e => e.month === parseInt(month));
-            extras.forEach(e => {
-                expenseRows.push([e.desc, e.amount]);
-            });
-            if (exp.extra > 0) {
-                expenseRows.push(['Autres dépenses (total)', exp.extra]);
+            if (exp.monthlyCharges > 0) {
+                expenseRows.push(['Charges Mensuels', exp.monthlyCharges]);
             }
-
             expenseRows.push(['TOTAL MOIS', exp.total]);
             expenseRows.push([]);
         });
