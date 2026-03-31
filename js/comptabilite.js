@@ -51,6 +51,7 @@ class ComptabiliteManager {
     bindEvents() {
         document.getElementById('year-filter').addEventListener('change', (e) => {
             this.selectedYear = parseInt(e.target.value);
+            this.displayChargesList();
         });
 
         document.querySelectorAll('.month-chip').forEach(btn => {
@@ -63,6 +64,7 @@ class ComptabiliteManager {
                     this.selectedMonths.push(month);
                     btn.classList.add('active');
                 }
+                this.displayChargesList();
             });
         });
 
@@ -277,36 +279,40 @@ class ComptabiliteManager {
         const container = document.getElementById('charges-list');
         container.innerHTML = '';
 
-          if (!this.monthlyCharges || this.monthlyCharges.length === 0) {
-    container.innerHTML = '<p class="text-gray-500 italic">Aucune charge configurée</p>';
-    return;
-}
+        if (!this.monthlyCharges || this.monthlyCharges.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 italic">Aucune charge configurée</p>';
+            return;
+        }
 
-        const chargesByYearMonth = {};
-        this.monthlyCharges.forEach(charge => {
-            const key = `${charge.year}-${charge.month}`;
-            if (!chargesByYearMonth[key]) {
-                chargesByYearMonth[key] = { year: charge.year, month: charge.month, charges: [] };
-            }
-            chargesByYearMonth[key].charges.push(charge);
+        const filteredCharges = this.monthlyCharges.filter(charge => {
+            if (this.selectedMonths.length === 0) return false;
+            return charge.year === this.selectedYear && this.selectedMonths.includes(charge.month);
         });
 
-        Object.entries(chargesByYearMonth)
-            .sort((a, b) => {
-                const [yearA, monthA] = a[0].split('-').map(Number);
-                const [yearB, monthB] = b[0].split('-').map(Number);
-                if (yearA !== yearB) return yearA - yearB;
-                return monthA - monthB;
-            })
-            .forEach(([key, data]) => {
+        if (filteredCharges.length === 0) {
+            container.innerHTML = '<p class="text-gray-500 italic">Aucune charge pour cette période</p>';
+            return;
+        }
+
+        const chargesByMonth = {};
+        filteredCharges.forEach(charge => {
+            if (!chargesByMonth[charge.month]) {
+                chargesByMonth[charge.month] = [];
+            }
+            chargesByMonth[charge.month].push(charge);
+        });
+
+        Object.entries(chargesByMonth)
+            .sort((a, b) => parseInt(a[0]) - parseInt(b[0]))
+            .forEach(([month, charges]) => {
                 const monthDiv = document.createElement('div');
                 monthDiv.className = 'border border-gray-200 rounded-lg p-4 bg-gray-50 mb-3';
 
                 let html = `
-                    <div class="font-bold text-gray-800 mb-3">${this.getMonthName(data.month)} ${data.year}</div>
+                    <div class="font-bold text-gray-800 mb-3">${this.getMonthName(parseInt(month))}</div>
                 `;
 
-                data.charges.forEach(charge => {
+                charges.forEach(charge => {
                     html += `
                         <div class="flex justify-between items-center py-2 px-3 bg-white rounded mb-2 border border-gray-100">
                             <div>
@@ -356,8 +362,9 @@ class ComptabiliteManager {
             });
 
             monthReservations.forEach(res => {
-                const eventType = res.event_type || 'Mariage';
-                const hasLighting = res.options && res.options.includes('Jeux de lumière');
+                const notesLines = (res.notes || 'Mariage').split('\n');
+                const eventType = notesLines[0].trim() || 'Mariage';
+                const hasLighting = res.notes && res.notes.includes('Jeux de lumière');
 
                 if (eventType === 'Mariage') {
                     this.expenses[monthKey].servers += 12 * 40;
@@ -442,23 +449,81 @@ class ComptabiliteManager {
 
         Object.entries(this.expenses).forEach(([monthKey, exp]) => {
             const [year, month] = monthKey.split('-');
-            const monthName = this.getMonthName(parseInt(month));
+            const monthNum = parseInt(month);
+            const monthName = this.getMonthName(monthNum);
 
             const monthDiv = document.createElement('div');
             monthDiv.className = 'border border-gray-200 rounded-lg p-4 mb-4';
 
+            const monthReservations = this.reservations.filter(res => {
+                const resDate = new Date(res.date_res);
+                return resDate.getFullYear() === parseInt(year) && resDate.getMonth() + 1 === monthNum;
+            });
+
+            const totalContractsCount = monthReservations.length;
+            const hennaCount = monthReservations.filter(res => {
+                const notesLines = (res.notes || 'Mariage').split('\n');
+                const eventType = notesLines[0].trim() || 'Mariage';
+                return eventType === 'Henna';
+            }).length;
+            const marriageCount = monthReservations.filter(res => {
+                const notesLines = (res.notes || 'Mariage').split('\n');
+                const eventType = notesLines[0].trim() || 'Mariage';
+                return eventType === 'Mariage' || eventType === '';
+            }).length;
+            const monthRemain = monthReservations.reduce((sum, res) => {
+                const montant = parseFloat(res.montant_tot) || 0;
+                const avance = parseFloat(res.avance) || 0;
+                return sum + (montant - avance);
+            }, 0);
+            const monthNetProfit = monthRemain - exp.total;
+
             const html = `
-                <h3 class="font-bold text-gray-800 mb-3">${monthName} ${year}</h3>
-                ${this.createExpenseRow('Serveurs', exp.servers)}
-                ${this.createExpenseRow('Gérant', exp.manager)}
-                ${this.createExpenseRow('Technicien Lumière', exp.lightingTechnician)}
-                ${this.createExpenseRow('Nettoyage', exp.cleaning)}
-                ${this.createExpenseRow('Électricité (contrats)', exp.electricity)}
-                ${this.createExpenseRow('Électricité (fixe)', exp.fixedMonthlyElectricity)}
-                ${this.createExpenseRow('IRPP', exp.irpp)}
-                ${exp.monthlyCharges > 0 ? this.createExpenseRow('Charges Mensuels', exp.monthlyCharges) : ''}
-                <div class="border-t border-gray-300 mt-2 pt-2">
-                    ${this.createExpenseRow('Total Mois', exp.total, true)}
+                <h3 class="font-bold text-gray-800 mb-4">${monthName} ${year}</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-3 border-b pb-2">Détails des Charges</h4>
+                        ${this.createExpenseRow('Serveurs', exp.servers)}
+                        ${this.createExpenseRow('Gérant', exp.manager)}
+                        ${this.createExpenseRow('Technicien Lumière', exp.lightingTechnician)}
+                        ${this.createExpenseRow('Nettoyage', exp.cleaning)}
+                        ${this.createExpenseRow('Électricité Consommation', exp.electricity)}
+                        ${this.createExpenseRow('Électricité (fixe)', exp.fixedMonthlyElectricity)}
+                        ${this.createExpenseRow('IRPP', exp.irpp)}
+                        ${exp.monthlyCharges > 0 ? this.createExpenseRow('Charges Mensuels', exp.monthlyCharges) : ''}
+                        <div class="border-t border-gray-300 mt-3 pt-3">
+                            ${this.createExpenseRow('Total Charges', exp.total, true)}
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold text-gray-700 mb-3 border-b pb-2">Statistiques</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center py-2 text-gray-700">
+                                <span>Total Contrats</span>
+                                <span class="font-bold">${totalContractsCount}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 text-gray-700">
+                                <span>Contrats Mariage</span>
+                                <span class="font-bold text-blue-600">${marriageCount}</span>
+                            </div>
+                            <div class="flex justify-between items-center py-2 text-gray-700">
+                                <span>Contrats Henna</span>
+                                <span class="font-bold text-purple-600">${hennaCount}</span>
+                            </div>
+                            <div class="border-t border-gray-300 mt-3 pt-3">
+                                <div class="flex justify-between items-center py-2 text-gray-700">
+                                    <span>Reste à Payer</span>
+                                    <span class="font-bold text-green-600">${monthRemain.toFixed(2)} DT</span>
+                                </div>
+                            </div>
+                            <div class="bg-yellow-50 border-t border-gray-300 mt-3 pt-3 rounded">
+                                <div class="flex justify-between items-center py-2 font-bold text-gray-900">
+                                    <span>Bénéfice Net</span>
+                                    <span class="${monthNetProfit >= 0 ? 'text-green-600' : 'text-red-600'}">${monthNetProfit.toFixed(2)} DT</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `;
 
@@ -549,7 +614,31 @@ class ComptabiliteManager {
 
         Object.entries(this.expenses).forEach(([monthKey, exp]) => {
             const [year, month] = monthKey.split('-');
-            const monthName = this.getMonthName(parseInt(month));
+            const monthNum = parseInt(month);
+            const monthName = this.getMonthName(monthNum);
+
+            const monthReservations = this.reservations.filter(res => {
+                const resDate = new Date(res.date_res);
+                return resDate.getFullYear() === parseInt(year) && resDate.getMonth() + 1 === monthNum;
+            });
+
+            const totalContractsCount = monthReservations.length;
+            const hennaCount = monthReservations.filter(res => {
+                const notesLines = (res.notes || 'Mariage').split('\n');
+                const eventType = notesLines[0].trim() || 'Mariage';
+                return eventType === 'Henna';
+            }).length;
+            const marriageCount = monthReservations.filter(res => {
+                const notesLines = (res.notes || 'Mariage').split('\n');
+                const eventType = notesLines[0].trim() || 'Mariage';
+                return eventType === 'Mariage' || eventType === '';
+            }).length;
+            const monthRemain = monthReservations.reduce((sum, res) => {
+                const montant = parseFloat(res.montant_tot) || 0;
+                const avance = parseFloat(res.avance) || 0;
+                return sum + (montant - avance);
+            }, 0);
+            const monthNetProfit = monthRemain - exp.total;
 
             const expenseData = [
                 ['Serveurs', `${exp.servers.toFixed(2)} DT`],
@@ -560,10 +649,18 @@ class ComptabiliteManager {
                 ['Électricité (fixe)', `${exp.fixedMonthlyElectricity.toFixed(2)} DT`],
                 ['IRPP', `${exp.irpp.toFixed(2)} DT`],
                 ...(exp.monthlyCharges > 0 ? [['Charges Mensuels', `${exp.monthlyCharges.toFixed(2)} DT`]] : []),
-                ['Total', `${exp.total.toFixed(2)} DT`]
+                ['Total Dépenses', `${exp.total.toFixed(2)} DT`]
             ];
 
-            if (doc.lastAutoTable && doc.lastAutoTable.finalY + 60 > pageHeight) {
+            const statisticsData = [
+                ['Total Contrats', totalContractsCount],
+                ['Contrats Mariage', marriageCount],
+                ['Contrats Henna', hennaCount],
+                ['Reste à Payer', `${monthRemain.toFixed(2)} DT`],
+                ['Bénéfice Net', `${monthNetProfit.toFixed(2)} DT`]
+            ];
+
+            if (doc.lastAutoTable && doc.lastAutoTable.finalY + 80 > pageHeight) {
                 doc.addPage();
                 yPosition = 15;
             }
@@ -578,7 +675,22 @@ class ComptabiliteManager {
                 body: expenseData,
                 theme: 'grid',
                 headStyles: { fillColor: [200, 100, 100], textColor: [255, 255, 255], fontStyle: 'bold' },
-                bodyStyles: { textColor: [0, 0, 0] }
+                bodyStyles: { textColor: [0, 0, 0] },
+                columnStyles: { 0: { cellWidth: 85 }, 1: { cellWidth: 85 } },
+                margin: { left: 105 }
+            });
+
+            yPosition = doc.lastAutoTable.finalY + 5;
+
+            doc.autoTable({
+                startY: yPosition,
+                head: [['Statistiques', 'Valeur']],
+                body: statisticsData,
+                theme: 'grid',
+                headStyles: { fillColor: [100, 150, 100], textColor: [255, 255, 255], fontStyle: 'bold' },
+                bodyStyles: { textColor: [0, 0, 0] },
+                columnStyles: { 0: { cellWidth: 85 }, 1: { cellWidth: 85 } },
+                margin: { left: 105 }
             });
 
             yPosition = doc.lastAutoTable.finalY + 8;
@@ -611,7 +723,33 @@ class ComptabiliteManager {
         const expenseRows = [['DÉTAILS DES DÉPENSES']];
         Object.entries(this.expenses).forEach(([monthKey, exp]) => {
             const [year, month] = monthKey.split('-');
-            const monthName = this.getMonthName(parseInt(month));
+            const monthNum = parseInt(month);
+            const monthName = this.getMonthName(monthNum);
+
+            const monthReservations = this.reservations.filter(res => {
+                const resDate = new Date(res.date_res);
+                return resDate.getFullYear() === parseInt(year) && resDate.getMonth() + 1 === monthNum;
+            });
+
+            const totalContractsCount = monthReservations.length;
+            const hennaCount = monthReservations.filter(res => {
+                const notesLines = (res.notes || 'Mariage').split('\n');
+                const eventType = notesLines[0].trim() || 'Mariage';
+                return eventType === 'Henna';
+            }).length;
+            const marriageCount = monthReservations.filter(res => {
+                const notesLines = (res.notes || 'Mariage').split('\n');
+                const eventType = notesLines[0].trim() || 'Mariage';
+                return eventType === 'Mariage' || eventType === '';
+            }).length;
+            const monthRemain = monthReservations.reduce((sum, res) => {
+                const montant = parseFloat(res.montant_tot) || 0;
+                const avance = parseFloat(res.avance) || 0;
+                return sum + (montant - avance);
+            }, 0);
+            const monthNetProfit = monthRemain - exp.total;
+
+            expenseRows.push([]);
             expenseRows.push([`${monthName} ${year}`]);
             expenseRows.push(['Serveurs', exp.servers]);
             expenseRows.push(['Gérant', exp.manager]);
@@ -623,8 +761,14 @@ class ComptabiliteManager {
             if (exp.monthlyCharges > 0) {
                 expenseRows.push(['Charges Mensuels', exp.monthlyCharges]);
             }
-            expenseRows.push(['TOTAL MOIS', exp.total]);
+            expenseRows.push(['TOTAL DÉPENSES', exp.total]);
             expenseRows.push([]);
+            expenseRows.push(['--- STATISTIQUES ---']);
+            expenseRows.push(['Total Contrats', totalContractsCount]);
+            expenseRows.push(['Contrats Mariage', marriageCount]);
+            expenseRows.push(['Contrats Henna', hennaCount]);
+            expenseRows.push(['Reste à Payer', monthRemain]);
+            expenseRows.push(['Bénéfice Net Mois', monthNetProfit]);
         });
 
         const ws2 = XLSX.utils.aoa_to_sheet(expenseRows);
