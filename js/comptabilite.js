@@ -567,138 +567,160 @@ class ComptabiliteManager {
         });
     }
 
-    exportPDF() {
-        if (this.selectedMonths.length === 0) {
-            alert('Veuillez calculer d\'abord');
-            return;
-        }
-
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const pageHeight = doc.internal.pageSize.getHeight();
-        const pageWidth = doc.internal.pageSize.getWidth();
-        let yPosition = 15;
-
-        doc.setFontSize(18);
-        doc.text('RAPPORT COMPTABILITÉ', pageWidth / 2, yPosition, { align: 'center' });
-        yPosition += 15;
-
-        doc.setFontSize(10);
-        doc.text(`Période: ${this.selectedMonths.map(m => this.getMonthName(m)).join(', ')} ${this.selectedYear}`, 15, yPosition);
-        yPosition += 10;
-
-        const totalRemain = parseFloat(document.getElementById('total-remain').textContent);
-        const totalExpenses = parseFloat(document.getElementById('total-expenses').textContent);
-        const netProfit = parseFloat(document.getElementById('net-profit').textContent);
-
-        const summaryData = [
-            ['Reste à Payer (Contrats)', `${totalRemain.toFixed(2)} DT`],
-            ['Total Dépenses', `${totalExpenses.toFixed(2)} DT`],
-            ['Bénéfice Net', `${netProfit.toFixed(2)} DT`]
-        ];
-
-        doc.autoTable({
-            startY: yPosition,
-            head: [['Description', 'Montant']],
-            body: summaryData,
-            theme: 'grid',
-            headStyles: { fillColor: [255, 215, 0], textColor: [0, 0, 0], fontStyle: 'bold' },
-            bodyStyles: { textColor: [0, 0, 0] }
-        });
-
-        yPosition = doc.lastAutoTable.finalY + 10;
-
-        doc.setFontSize(12);
-        doc.text('Détails des Dépenses par Mois:', 15, yPosition);
-        yPosition += 8;
-
-        Object.entries(this.expenses).forEach(([monthKey, exp]) => {
-            const [year, month] = monthKey.split('-');
-            const monthNum = parseInt(month);
-            const monthName = this.getMonthName(monthNum);
-
-            const monthReservations = this.reservations.filter(res => {
-                const resDate = new Date(res.date_res);
-                return resDate.getFullYear() === parseInt(year) && resDate.getMonth() + 1 === monthNum;
-            });
-
-            const totalContractsCount = monthReservations.length;
-            const hennaCount = monthReservations.filter(res => {
-                const notesLines = (res.notes || 'Mariage').split('\n');
-                const eventType = notesLines[0].trim() || 'Mariage';
-                return eventType === 'Henna';
-            }).length;
-            const marriageCount = monthReservations.filter(res => {
-                const notesLines = (res.notes || 'Mariage').split('\n');
-                const eventType = notesLines[0].trim() || 'Mariage';
-                return eventType === 'Mariage' || eventType === '';
-            }).length;
-            const monthRemain = monthReservations.reduce((sum, res) => {
-                const montant = parseFloat(res.montant_tot) || 0;
-                const avance = parseFloat(res.avance) || 0;
-                return sum + (montant - avance);
-            }, 0);
-            const monthNetProfit = monthRemain - exp.total;
-
-            const expenseData = [
-                ['Serveurs', `${exp.servers.toFixed(2)} DT`],
-                ['Gérant', `${exp.manager.toFixed(2)} DT`],
-                ['Technicien Lumière', `${exp.lightingTechnician.toFixed(2)} DT`],
-                ['Nettoyage', `${exp.cleaning.toFixed(2)} DT`],
-                ['Électricité (contrats)', `${exp.electricity.toFixed(2)} DT`],
-                ['Électricité (fixe)', `${exp.fixedMonthlyElectricity.toFixed(2)} DT`],
-                ['IRPP', `${exp.irpp.toFixed(2)} DT`],
-                ...(exp.monthlyCharges > 0 ? [['Charges Mensuels', `${exp.monthlyCharges.toFixed(2)} DT`]] : []),
-                ['Total Dépenses', `${exp.total.toFixed(2)} DT`]
-            ];
-
-            const statisticsData = [
-                ['Total Contrats', totalContractsCount],
-                ['Contrats Mariage', marriageCount],
-                ['Contrats Henna', hennaCount],
-                ['Reste à Payer', `${monthRemain.toFixed(2)} DT`],
-                ['Bénéfice Net', `${monthNetProfit.toFixed(2)} DT`]
-            ];
-
-            if (doc.lastAutoTable && doc.lastAutoTable.finalY + 80 > pageHeight) {
-                doc.addPage();
-                yPosition = 15;
-            }
-
-            doc.setFontSize(11);
-            doc.text(`${monthName} ${year}`, 15, yPosition);
-            yPosition += 5;
-
-            doc.autoTable({
-                startY: yPosition,
-                head: [['Catégorie', 'Montant']],
-                body: expenseData,
-                theme: 'grid',
-                headStyles: { fillColor: [200, 100, 100], textColor: [255, 255, 255], fontStyle: 'bold' },
-                bodyStyles: { textColor: [0, 0, 0] },
-                columnStyles: { 0: { cellWidth: 85 }, 1: { cellWidth: 85 } },
-                margin: { left: 105 }
-            });
-
-            yPosition = doc.lastAutoTable.finalY + 5;
-
-            doc.autoTable({
-                startY: yPosition,
-                head: [['Statistiques', 'Valeur']],
-                body: statisticsData,
-                theme: 'grid',
-                headStyles: { fillColor: [100, 150, 100], textColor: [255, 255, 255], fontStyle: 'bold' },
-                bodyStyles: { textColor: [0, 0, 0] },
-                columnStyles: { 0: { cellWidth: 85 }, 1: { cellWidth: 85 } },
-                margin: { left: 105 }
-            });
-
-            yPosition = doc.lastAutoTable.finalY + 8;
-        });
-
-        doc.save(`comptabilite_${this.selectedYear}.pdf`);
+exportPDF() {
+    if (this.selectedMonths.length === 0) {
+        alert("Veuillez calculer d'abord");
+        return;
     }
 
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPosition = 15;
+
+    // Titre principal
+    doc.setFontSize(18);
+    doc.text("RAPPORT COMPTABILITÉ", pageWidth / 2, yPosition, { align: "center" });
+    yPosition += 15;
+
+    // Période
+    doc.setFontSize(10);
+    doc.text(
+        `Période: ${this.selectedMonths.map(m => this.getMonthName(m)).join(", ")} ${this.selectedYear}`,
+        15,
+        yPosition
+    );
+    yPosition += 10;
+
+    // Résumé global
+    const totalRemain = parseFloat(document.getElementById("total-remain").textContent);
+    const totalExpenses = parseFloat(document.getElementById("total-expenses").textContent);
+    const netProfit = parseFloat(document.getElementById("net-profit").textContent);
+
+    const summaryData = [
+        ["Reste à Payer (Contrats)", `${totalRemain.toFixed(2)} DT`],
+        ["Total Dépenses", `${totalExpenses.toFixed(2)} DT`],
+        ["Bénéfice Net", `${netProfit.toFixed(2)} DT`],
+    ];
+
+    doc.autoTable({
+        startY: yPosition,
+        head: [["Description", "Montant"]],
+        body: summaryData,
+        theme: "grid",
+        styles: { lineColor: [0, 0, 0], lineWidth: 0.3 }, // bordures noires
+        headStyles: { fillColor: [255, 215, 0], textColor: [0, 0, 0], fontStyle: "bold" },
+        bodyStyles: { textColor: [0, 0, 0] },
+    });
+
+    yPosition = doc.lastAutoTable.finalY + 10;
+
+    doc.setFontSize(12);
+    doc.text("Détails des Dépenses par Mois:", 15, yPosition);
+    yPosition += 8;
+
+    // Boucle sur tous les mois sélectionnés
+    Object.entries(this.expenses).forEach(([monthKey, exp]) => {
+        const [year, month] = monthKey.split("-");
+        const monthNum = parseInt(month);
+        const monthName = this.getMonthName(monthNum);
+
+        // Réservations du mois
+        const monthReservations = this.reservations.filter(res => {
+            const resDate = new Date(res.date_res);
+            return resDate.getFullYear() === parseInt(year) && resDate.getMonth() + 1 === monthNum;
+        });
+
+        const totalContractsCount = monthReservations.length;
+        const hennaCount = monthReservations.filter(res => {
+            const notesLines = (res.notes || "Mariage").split("\n");
+            const eventType = notesLines[0].trim() || "Mariage";
+            return eventType === "Henna";
+        }).length;
+        const marriageCount = monthReservations.filter(res => {
+            const notesLines = (res.notes || "Mariage").split("\n");
+            const eventType = notesLines[0].trim() || "Mariage";
+            return eventType === "Mariage" || eventType === "";
+        }).length;
+
+        const monthRemain = monthReservations.reduce((sum, res) => {
+            const montant = parseFloat(res.montant_tot) || 0;
+            const avance = parseFloat(res.avance) || 0;
+            return sum + (montant - avance);
+        }, 0);
+        const monthNetProfit = monthRemain - exp.total;
+
+        // Charges
+        const expenseData = [
+            ["Serveurs", `${exp.servers.toFixed(2)} DT`],
+            ["Gérant", `${exp.manager.toFixed(2)} DT`],
+            ["Technicien Lumière", `${exp.lightingTechnician.toFixed(2)} DT`],
+            ["Nettoyage", `${exp.cleaning.toFixed(2)} DT`],
+            ["Électricité (contrats)", `${exp.electricity.toFixed(2)} DT`],
+            ["Électricité (fixe)", `${exp.fixedMonthlyElectricity.toFixed(2)} DT`],
+            ["IRPP", `${exp.irpp.toFixed(2)} DT`],
+            ...(exp.monthlyCharges > 0 ? [["Charges Mensuels", `${exp.monthlyCharges.toFixed(2)} DT`]] : []),
+            ["Total Dépenses", `${exp.total.toFixed(2)} DT`],
+        ];
+
+        // Statistiques
+        const statisticsData = [
+            ["Total Contrats", totalContractsCount],
+            ["Contrats Mariage", marriageCount],
+            ["Contrats Henna", hennaCount],
+            ["Reste à Payer", `${monthRemain.toFixed(2)} DT`],
+            ["Bénéfice Net", `${monthNetProfit.toFixed(2)} DT`],
+        ];
+
+        // Fusionner charges et statistiques avec une colonne vide au milieu
+        const mergedData = [];
+        const maxLength = Math.max(expenseData.length, statisticsData.length);
+        for (let i = 0; i < maxLength; i++) {
+            mergedData.push([
+                expenseData[i] ? expenseData[i][0] : "",
+                expenseData[i] ? expenseData[i][1] : "",
+                "", // colonne vide pour espacement
+                statisticsData[i] ? statisticsData[i][0] : "",
+                statisticsData[i] ? statisticsData[i][1] : "",
+            ]);
+        }
+
+        // Nouvelle page si nécessaire
+        if (doc.lastAutoTable && doc.lastAutoTable.finalY + 80 > pageHeight) {
+            doc.addPage();
+            yPosition = 15;
+        }
+
+        // Titre du mois
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 150);
+        doc.text(`${monthName} ${year}`, 15, yPosition);
+        yPosition += 5;
+
+        // Tableau fusionné
+        doc.autoTable({
+            startY: yPosition,
+            head: [["Catégorie", "Montant", "", "Statistiques", "Valeur"]],
+            body: mergedData,
+            theme: "grid",
+            styles: { lineColor: [0, 0, 0], lineWidth: 0.3 }, // bordures noires
+            headStyles: { fillColor: [80, 80, 80], textColor: [255, 255, 255], fontStyle: "bold" },
+            bodyStyles: { textColor: [0, 0, 0] },
+            columnStyles: {
+                0: { cellWidth: 50, fillColor: [255, 230, 200] }, // Charges
+                1: { cellWidth: 40, fillColor: [255, 230, 200] },
+                2: { cellWidth: 10 }, // espace vide
+                3: { cellWidth: 50, fillColor: [200, 230, 200] }, // Statistiques
+                4: { cellWidth: 40, fillColor: [200, 230, 200] },
+            },
+        });
+
+        yPosition = doc.lastAutoTable.finalY + 8;
+    });
+
+    doc.save(`comptabilite_${this.selectedYear}.pdf`);
+}
     exportExcel() {
         if (this.selectedMonths.length === 0) {
             alert('Veuillez calculer d\'abord');
