@@ -1828,7 +1828,7 @@ this.populateEditForm(reservation);
         if (!calendarDiv) return;
 
         const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
+        const lastDay = new Date(year, month, 0);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -1860,7 +1860,7 @@ this.populateEditForm(reservation);
 
         // Add days of the month
         for (let day = 1; day <= lastDay.getDate(); day++) {
-            const currentDate = new Date(year, month-1, day);
+            const currentDate = new Date(year, month, day);
             const dateKey = currentDate.toLocaleDateString('en-CA'); 
             const dayReservations = reservationMap[dateKey] || [];
 
