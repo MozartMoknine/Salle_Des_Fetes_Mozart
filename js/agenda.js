@@ -1860,7 +1860,7 @@ this.populateEditForm(reservation);
 
         // Add days of the month
         for (let day = 1; day <= lastDay.getDate(); day++) {
-            const currentDate = new Date(year, month, day);
+            const currentDate = new Date(year, month-1, day);
             const dateKey = currentDate.toLocaleDateString('en-CA'); 
             const dayReservations = reservationMap[dateKey] || [];
 
