@@ -1807,7 +1807,7 @@ this.populateEditForm(reservation);
         try {
             const { data: monthReservations, error } = await this.supabase
                 .from('reservations')
-                .select('date_res, horaire')
+                .select('date_res, horaire, nom, prenom')
                 .gte('date_res', this.formatDateLocal(startDate))
                 .lte('date_res', this.formatDateLocal(endDate))
 
@@ -1839,7 +1839,11 @@ this.populateEditForm(reservation);
             if (!reservationMap[dateKey]) {
                 reservationMap[dateKey] = [];
             }
-            reservationMap[dateKey].push(res.horaire);
+            reservationMap[dateKey].push({
+                horaire: res.horaire,
+                nom: res.nom,
+                prenom: res.prenom
+            });
         });
 
         let calendarHTML = '';
@@ -1882,20 +1886,51 @@ this.populateEditForm(reservation);
                 dayClass += 'bg-gray-300 text-gray-600';
             }else if (dayReservations.length === 2) {
                 // Fully booked (both nuit and apres-midi)
-                dayClass += 'bg-red-200 border-red-400';
-                dayContent += '<div class="text-xs text-red-700">Complet</div>';
+                              const apresMidi = dayReservations.find(r => r.horaire === 'apres-midi');
+                  const nuit = dayReservations.find(r => r.horaire === 'nuit');
+              
+                  dayClass += 'bg-red-200 border-red-400';
+              
+                  dayContent += `
+                      <div class="text-xs text-red-700">
+                          Complet
+                      </div>
+                      <div class="text-[10px] leading-tight">
+                          ${apresMidi ? apresMidi.nom + ' ' + apresMidi.prenom : ''}
+                          /
+                          ${nuit ? nuit.nom + ' ' + nuit.prenom : ''}
+                      </div>
+                  `;
             } else if (dayReservations.length === 1) {
                 // Partially booked
                  // Partially booked
-    if (dayReservations.includes('nuit')) {
-        // Nuit is booked → Après-midi is free
-        dayClass += 'bg-yellow-100 border-yellow-400';
-        dayContent += '<div class="text-xs text-yellow-700">Après-midi Libre</div>';
-    } else {
-        // Après-midi is booked → Nuit is free
-        dayClass += 'bg-purple-100 border-purple-400';
-        dayContent += '<div class="text-xs text-purple-700">Nuit Libre</div>';
-    }
+                                            const res = dayReservations[0];
+                          const fullName = `${res.nom} ${res.prenom}`;
+                      
+                          if (res.horaire === 'nuit') {
+                      
+                              dayClass += 'bg-yellow-100 border-yellow-400';
+                              dayContent += `
+                                  <div class="text-xs text-yellow-700">
+                                      Après-midi Libre
+                                  </div>
+                                  <div class="text-[10px] leading-tight">
+                                      Nuit : ${fullName}
+                                  </div>
+                              `;
+                      
+                          } else {
+                      
+                              dayClass += 'bg-purple-100 border-purple-400';
+                              dayContent += `
+                                  <div class="text-xs text-purple-700">
+                                      Nuit Libre
+                                  </div>
+                                  <div class="text-[10px] leading-tight">
+                                      Après-midi : ${fullName}
+                                  </div>
+                              `;
+                          }
             }      else if (dayReservations.length === 0) {
                 // Available
                 dayClass += 'bg-green-100 border-green-400';
