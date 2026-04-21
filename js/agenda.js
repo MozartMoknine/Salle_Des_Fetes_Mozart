@@ -1766,7 +1766,7 @@ this.populateEditForm(reservation);
   }
 }
 
-
+//from here 
     setupAvailabilityCalendar() {
         this.populateYears();
         this.updateAvailabilityCalendar();
@@ -1798,7 +1798,7 @@ this.populateEditForm(reservation);
         if (!yearSelect || !monthSelect || !calendarDiv) return;
 
         const year = parseInt(yearSelect.value);
-        const month = parseInt(monthSelect.value) - 1; // JavaScript months are 0-indexed
+        const month = parseInt(monthSelect.value); // JavaScript months are 0-indexed
 
         // Get reservations for this month
         const startDate = new Date(year, month, 1);
