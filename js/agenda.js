@@ -1860,13 +1860,16 @@ this.populateEditForm(reservation);
 
         // Add days of the month
         for (let day = 1; day <= lastDay.getDate(); day++) {
-            const currentDate = new Date(year, month-1, day-1);
+            const currentDate = new Date(year, month, day);
             const dateKey = currentDate.toISOString().split('T')[0]; 
             const dayReservations = reservationMap[dateKey] || [];
 
             let dayClass = 'h-20 border border-gray-200 rounded p-1 ';
             let dayContent = `<div class="font-semibold text-sm">${day}</div>`;
 
+         //test date
+         console.log("Reservations:", reservations); console.log("Map:", reservationMap); console.log("Current:", dateKey);
+         
             if (currentDate < today) {
                 // Past date
                 dayClass += 'bg-gray-300 text-gray-600';
