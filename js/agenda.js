@@ -1808,8 +1808,8 @@ this.populateEditForm(reservation);
             const { data: monthReservations, error } = await this.supabase
                 .from('reservations')
                 .select('date_res, horaire')
-                .gte('date_res', startDate.toISOString().split('T')[0])
-                .lte('date_res', endDate.toISOString().split('T')[0]);
+                .gte('date_res', this.formatDateLocal(startDate))
+                .lte('date_res', this.formatDateLocal(endDate))
 
             if (error) {
                 throw error;
@@ -1958,6 +1958,13 @@ this.populateEditForm(reservation);
         };
         return horaireMap[horaire] || horaire;
     }
+
+ //for start day
+ formatDateLocal(date){
+    return date.getFullYear() + '-' +
+        String(date.getMonth()+1).padStart(2,'0') + '-' +
+        String(date.getDate()).padStart(2,'0');
+}
 
     getMonthName(monthIndex) {
         const months = [
