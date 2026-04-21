@@ -1798,7 +1798,7 @@ this.populateEditForm(reservation);
         if (!yearSelect || !monthSelect || !calendarDiv) return;
 
         const year = parseInt(yearSelect.value);
-        const month = parseInt(monthSelect.value); // JavaScript months are 0-indexed
+        const month = parseInt(monthSelect.value) -1 ; // JavaScript months are 0-indexed
 
         // Get reservations for this month
         const startDate = new Date(year, month, 1);
@@ -1827,8 +1827,8 @@ this.populateEditForm(reservation);
         const calendarDiv = document.getElementById('availability-calendar');
         if (!calendarDiv) return;
 
-        const firstDay = new Date(year, month-1, 1);
-        const lastDay = new Date(year, month, 0);
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month+1, 0);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -1861,7 +1861,7 @@ this.populateEditForm(reservation);
         // Add days of the month
         for (let day = 1; day <= lastDay.getDate(); day++) {
             const currentDate = new Date(year, month-1, day-1);
-            const dateKey = currentDate.toLocaleDateString('en-CA'); 
+            const dateKey = currentDate.toISOString().split('T')[0]; 
             const dayReservations = reservationMap[dateKey] || [];
 
             let dayClass = 'h-20 border border-gray-200 rounded p-1 ';
