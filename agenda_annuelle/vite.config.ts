@@ -4,7 +4,7 @@ import { fileURLToPath, URL } from 'node:url';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/Salle_Des_Fetes_Mozart/',
+  base: '/',
 
   plugins: [react()],
 
