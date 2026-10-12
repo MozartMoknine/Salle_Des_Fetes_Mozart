@@ -1,3 +1,29 @@
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
+const UPLOADED_COVERS_KEY = 'uploaded-cover-images';
+const UPLOADED_BACKS_KEY = 'uploaded-back-images';
+
+function getUploadedImages(key) {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function addUploadedImage(key, dataUrl, fileName) {
+  const images = getUploadedImages(key);
+  if (!images.some((img) => img.data === dataUrl)) {
+    images.unshift({ data: dataUrl, name: fileName });
+    try {
+      localStorage.setItem(key, JSON.stringify(images));
+    } catch (e) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function ColorRow({ label, value, onChange }) {
   return React.createElement('div', null,
     React.createElement('label', { className: 'text-xs text-gray-500 mb-1 block' }, label),
@@ -21,16 +47,37 @@ function ColorRow({ label, value, onChange }) {
 function SettingsPanel({ settings, updateSetting, updateSettings, resetSettings, isOpen, onClose }) {
   const coverInputRef = useRef(null);
   const backInputRef = useRef(null);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadedCovers, setUploadedCovers] = useState(() => getUploadedImages(UPLOADED_COVERS_KEY));
+  const [uploadedBacks, setUploadedBacks] = useState(() => getUploadedImages(UPLOADED_BACKS_KEY));
 
   const handleImageUpload = (e, key) => {
     const file = e.target.files && e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        updateSetting(key, reader.result);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+    setUploadError('');
+    if (file.size > MAX_IMAGE_SIZE) {
+      setUploadError('Image trop volumineuse (max 10 Mo). Le fichier fait ' + (file.size / 1024 / 1024).toFixed(1) + ' Mo.');
+      e.target.value = '';
+      return;
     }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result;
+      const storageKey = key === 'coverImage' ? UPLOADED_COVERS_KEY : UPLOADED_BACKS_KEY;
+      const ok = addUploadedImage(storageKey, dataUrl, file.name);
+      if (!ok) {
+        setUploadError('Stockage plein. Supprimez d\'anciennes images ou utilisez une image plus petite.');
+        return;
+      }
+      if (key === 'coverImage') {
+        setUploadedCovers(getUploadedImages(UPLOADED_COVERS_KEY));
+      } else {
+        setUploadedBacks(getUploadedImages(UPLOADED_BACKS_KEY));
+      }
+      updateSetting(key, dataUrl);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
   };
 
   const currentYear = new Date().getFullYear();
@@ -157,13 +204,14 @@ function SettingsPanel({ settings, updateSetting, updateSettings, resetSettings,
             React.createElement(Icons.ImageIcon, { size: 16, className: 'text-gray-600' }),
             React.createElement('h3', { className: 'text-sm font-semibold text-gray-700 uppercase tracking-wide' }, 'Image de couverture')
           ),
+          uploadError ? React.createElement('div', { className: 'mb-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-xs text-red-600' }, uploadError) : null,
           React.createElement('div', { className: 'flex gap-2 mb-3' },
             React.createElement('button', {
               onClick: () => coverInputRef.current && coverInputRef.current.click(),
               className: 'flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors'
             },
               React.createElement(Icons.Upload, { size: 14 }),
-              'Téléverser'
+              'Téléverser (max 10 Mo)'
             ),
             React.createElement('input', {
               ref: coverInputRef,
@@ -173,6 +221,28 @@ function SettingsPanel({ settings, updateSetting, updateSettings, resetSettings,
               onChange: (e) => handleImageUpload(e, 'coverImage')
             })
           ),
+          uploadedCovers.length > 0 ? React.createElement('div', { className: 'mb-3' },
+            React.createElement('p', { className: 'text-xs text-gray-400 mb-1.5' }, 'Vos images téléversées :'),
+            React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
+              uploadedCovers.map((img, i) =>
+                React.createElement('div', { key: 'uc-' + i, className: 'relative aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all ' + (settings.coverImage === img.data ? 'border-blue-500 ring-2 ring-blue-200' : 'border-transparent hover:border-gray-300') },
+                  React.createElement('button', {
+                    onClick: () => updateSetting('coverImage', img.data),
+                    className: 'w-full h-full'
+                  },
+                    React.createElement('img', { src: img.data, alt: img.name, className: 'w-full h-full object-cover' })
+                  ),
+                  React.createElement('a', {
+                    href: img.data,
+                    download: 'imgs/' + (img.name || 'cover-' + (i + 1) + '.jpg'),
+                    className: 'absolute bottom-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors',
+                    title: 'Télécharger dans imgs/'
+                  }, React.createElement(Icons.Upload, { size: 12 }))
+                )
+              )
+            )
+          ) : null,
+          React.createElement('p', { className: 'text-xs text-gray-400 mb-1.5' }, 'Images prédéfinies :'),
           React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
             COVER_IMAGES.map((img) =>
               React.createElement('button', {
@@ -191,13 +261,14 @@ function SettingsPanel({ settings, updateSetting, updateSettings, resetSettings,
             React.createElement(Icons.ImageIcon, { size: 16, className: 'text-gray-600' }),
             React.createElement('h3', { className: 'text-sm font-semibold text-gray-700 uppercase tracking-wide' }, 'Image de dos')
           ),
+          uploadError ? React.createElement('div', { className: 'mb-3 px-3 py-2 rounded-lg bg-red-50 border border-red-200 text-xs text-red-600' }, uploadError) : null,
           React.createElement('div', { className: 'flex gap-2 mb-3' },
             React.createElement('button', {
               onClick: () => backInputRef.current && backInputRef.current.click(),
               className: 'flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors'
             },
               React.createElement(Icons.Upload, { size: 14 }),
-              'Téléverser'
+              'Téléverser (max 10 Mo)'
             ),
             React.createElement('input', {
               ref: backInputRef,
@@ -207,6 +278,28 @@ function SettingsPanel({ settings, updateSetting, updateSettings, resetSettings,
               onChange: (e) => handleImageUpload(e, 'backImage')
             })
           ),
+          uploadedBacks.length > 0 ? React.createElement('div', { className: 'mb-3' },
+            React.createElement('p', { className: 'text-xs text-gray-400 mb-1.5' }, 'Vos images téléversées :'),
+            React.createElement('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
+              uploadedBacks.map((img, i) =>
+                React.createElement('div', { key: 'ub-' + i, className: 'relative aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all ' + (settings.backImage === img.data ? 'border-blue-500 ring-2 ring-blue-200' : 'border-transparent hover:border-gray-300') },
+                  React.createElement('button', {
+                    onClick: () => updateSetting('backImage', img.data),
+                    className: 'w-full h-full'
+                  },
+                    React.createElement('img', { src: img.data, alt: img.name, className: 'w-full h-full object-cover' })
+                  ),
+                  React.createElement('a', {
+                    href: img.data,
+                    download: 'imgs/' + (img.name || 'back-' + (i + 1) + '.jpg'),
+                    className: 'absolute bottom-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center hover:bg-black/80 transition-colors',
+                    title: 'Télécharger dans imgs/'
+                  }, React.createElement(Icons.Upload, { size: 12 }))
+                )
+              )
+            )
+          ) : null,
+          React.createElement('p', { className: 'text-xs text-gray-400 mb-1.5' }, 'Images prédéfinies :'),
           React.createElement('div', { className: 'grid grid-cols-3 gap-2' },
             BACK_IMAGES.map((img) =>
               React.createElement('button', {
